@@ -10,99 +10,161 @@
 	}
 %}
 
+
+%define parser_class_name {Parser}
+%define api.namespace {bison}
+
 %union{
 	Node *node;
+	std::vector<Extern*> *externs;
+	std::vector<FuncDecl*> *funcs;
 	Blk *blk;
-	Exp *exp;
 	Stmt *stmt;
-	Ident *ident;
-	VarDecl *varDecl;
-	std::vector *varVec;
-	std::vector *expVec;
-	std::string *string;
-	int token;
+	std::vector<Exp*> *exps;
+	Exp *exp;
+	std::vector<*VarDecl> vdecls;
+	std::vector<*Type> tdecls;
 }
 
-%token IDENT INT FLOAT
-%token EQ NE LT LE GT GE ASSIGN
-%token LPAREN RPAREN LBRACE RBRACE COMMA DOT
-%token PLUS MINUS MUL DIV
+%destructor{
+	if(&&){
+		delete (&&;
+		(&&) = nullptr;
+	}
+}
 
-%type ident
-%type numeric exp
-%type funcDeclArgs
-%type callArgs
-%type prog stmts blk
-%type stmt varDecl funcDecl
-%type comparison
+%token DEF "def"
+%token EXT "extern"
+%token <str> IDENT
+%token <num> NUM
 
-%left PLUS MINUS
-%left MUL DIV
+%token <op> ASSIGN "="
+%token <op> EQ "=="
+%token <op> NEQ "!="
+%token <op> NOT "!"
+%token <op> MUL "*"
+%token <op> DIV "/"
+%token <op> ADD "+"
+%token <op> SUB "-"
+%token <op> GT ">"
+%token <op> LT "<"
+%token <op> AND "&&"
+%token <op> OR "||"
+
+%token <type> INT "int"
+%token <type> CINT "cint"
+%token <type> FLOAT "float"
+%token <type> SFLOAT "sfloat"
+%token <type> VOID "void"
+
+%token IF "if"
+%token ELSE "else"
+%token FOR "for"
+%token REF "ref"
+%token VAR "&"
+
 
 %start prog
 
 %%
 
-prog : externDecl prog {$$ = new ExternDecl($1);}
-	 | func {}
+prog : 
+	externs funcs {$$ = new Prog($1, $2);}
+|	funcs {$$ = new Prog(nullptr, $1);}
 
-stmts : stmt {$$ = new Blk(); $$->statements.push_back($1);}
-	  | stmts stmt {$1->statements.push_back($2);}
-	  ;
+externs :
+	externs extern {$$->push_back($2);}
+|	extern {$$ = new std::vector<Extern*>(); $$->push_back($1);}
 
-stmt : varDecl | funcDecl
-	 | exp {$$ = new ExpStmt(*$1);}
-	 ;
+extern :
+	EXT type globid LPAREN tdecls RPAREN {$$ = new Extern($1, $2, $4);}
+|	EXT type globid LPAREN RPAREN {$$ = new Extern($1, $2);}
 
-blk : LBRACE stmts RBRACE {$$ = $2;}
-	| LBRACE RBRACE {$$ = new Blk();}
-	;
+funcs :
+	funcs func {$1->push_back($2);}
+|	func {$$ = new std::vector<FuncDecl*>(); $$->push_back($1)}
 
-varDecl : ident ident {$$ = new VarDecl(*$1, *$2);}
-		 | ident ident ASSIGN exp {$$ = new Vdecl(*1, *2, *4);}
-		 ;
+func :
+	DEF type globid LPAREN vdecls RPAREN blk {$$ = new FuncDecl(*$2, *$3, *$5, *$7);}
+|	DEF type globid LPAREN RPAREN blk{$$ = new FuncDecl(*$2, *$3, *$6);}
 
-funcDecl : ident ident LPAREN funcDeclArgs RPAREN block {$$ = new FuncDecl(*1, *2, *4, *6); delete $4;}
-		  ;
+blk :
+	LBRACE stmts RBRACE {$$ = new Blk($2);}
+|	LBRACE RBRACE {$$ = new Blk();}
 
-funcDeclArgs : /*blank*/ {$$ = new VarList();}
-			   | varDecl {$$ = new VarList(); $$->push_back($1);}
-			   | funcDeclArgs COMMA varDecl {$1->push_back($3);}
-			   ;
+stmts :
+	stmts stmt {$1->statements.push_back($2);}
+|	stmt {$$ = new Blk(); $$->statements.push_back($1);}
 
-ident : IDENT {$$ = new Ident(*$1); delete $1;}
-	  ;
-	
-numeric : INT {$$ = new Int(atol($1->c_str())); delete $1;}
-		| FLOAT {$$ = new Float(atof($1->c_str())); delete $1;}
-		;
+stmt :
+	blk
+|	RET exp
+|	RET
+|	vdecl "=" exp
+|	exp
+|	WHILE LPAREN exp RPAREN stmt
+|	IF LPAREN exp RPAREN ELSE stmt
+|	IF LPAREN exp RPAREN
+|	PRINT exp
+|	PRINT slit
 
-exp : ident ASSIGN exp {$$ = new Assignment(*$1, *$3);}
-	| ident LPAREN callArgs RPAREN {$$ = new MehtodCall(*$1, *$3); delete $3;}
-	| ident {$$ = $1}
-	| numeric
-	| exp comparison exp {$$ = new BinOp(*$1, $2, *$3);}
-	| LPAREN exp RPAREN {$$ =$2;}
-	;
+exps :
+	exps COMMA exp {$1->push_back($2);}
+|	exp {$$ = new std::vector<Exp*>(); $$->push_back($1);}
 
-callArgs : /*blank*/ {$$ = new ExpList();}
-		  | exp {$$ = new ExpList(); $$->push_back($1);}
-		  | callArgs COMMA exp {$1->push_back($3);}
-		  ;
+exp :
+	LPAREN exp RPAREN {$$ = $2;}
+|	binop
+|	uop
+|	lit
+|	var
+|	globid LPAREN exps RPAREN {$$ = new FuncCall(*$1, *$3); delete $3;}
+|	globid LPAREN RPAREN {$$ = new FuncCall(*$1);}
 
-comparison : EQ | NE | LT | LE | GT | GE | PLUS | MINUS | MUL | DIV
-		   ;
+%left "="
+%left "||"
+%left "&&"
+%left "=="
+%left ">" "<"
+%left "+" "-"
+%left "*" "/"
+
+binop :
+	exp <op> exp {$$ = new BinOp(*$1, *$2, *$3);}
+
+uop :
+	"!" exp {$$ = new UaryOp(*$1, *$2);}
+|	"-" exp {$$ = new UaryOp(*$1, *$2);}
+
+lit :
+	NUM {$$ = new Num(*$1);}
+
+slit :
+	STR {$$ = new Str{*$1};}
+
+ident :
+	IDENT {$$ = new Ident{*$1};}
+
+var :
+	VAR ident {$$ = new Var(*$2);}
+
+globid :
+	ident {$$ = new Globid(*$1);}
+
+type :
+	<type> {$$ = new Type{$1};}
+|	<type> REF {$$ = new Type{$2, true};}
+
+
+vdecls :
+	vdecls COMMA vdecl {$1->push_back($3);}
+|	vdecl {$$ = new std::vector<*VarDecl>(); $$->push_back($1);}
+
+tdecls :
+	types COMMA type {$1->push_pack($3);}
+|	type {$$ = new std::vector<*Type>(); $$->push_back($1);}
+
+vdecl :
+	type var {$$ = new VarDecl($1, $2);}
 
 %%
-
-
-
-
-
-
-
-
-
-
-
-
