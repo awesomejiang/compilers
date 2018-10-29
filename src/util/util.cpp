@@ -54,7 +54,7 @@ CompileArgs setupArgs(int argc, char **argv){
 
 
 void printUsage(){
-	std::cout << "E-K Compiler by Jiawei Jiang" << std::endl;
+	std::cout << "E-K Compiler by Jiawei Jiang and Jingchun Wang." << std::endl;
 	std::cout << "Usage: ./bin/ekcc[.py] [-h|-?] [-v] [-O] [-emit-ast|-emit-llvm] -o <output-file> <input-file>" << std::endl;
 	std::cout << "OPtions:" << std::endl;
 	std::cout << "	[-h|-?]                 call usage" << std::endl;
