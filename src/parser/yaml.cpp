@@ -1,8 +1,6 @@
 #include "node.h"
 
-
 using namespace YAML;
-
 
 void ExpStmt::printYaml(Emitter &out){
 	out << Key << "name" << Value << "expstmt";
@@ -88,7 +86,7 @@ void PrintSlitStmt::printYaml(Emitter &out){
 }
 
 void Type::printYaml(Emitter &out){
-	out << Key << "type" << Value << name;
+	out << Key << "type" << Value << string(isNoalias?"noalias ":"") + string(isRef?"ref ":"") + name;
 }
 
 void BinOp::printYaml(Emitter &out){
@@ -131,7 +129,7 @@ void UaryOp::printYaml(Emitter &out){
 }
 
 void Num::printYaml(Emitter &out){
-	if(val.find(".") != string::npos)
+	if(typeName == "float")
 		out << Key << "name" << Value << "flit";
 	else
 		out << Key << "name" << Value << "lit";
@@ -264,7 +262,8 @@ void Extern::printYaml(Emitter &out){
 void Prog::printYaml(Emitter &out){
 	out << BeginMap;
 	out << Key << "name" << Value << "prog";
-	
+
+	//functions
 	out << Key << "funcs" << Value;
 	out << BeginMap;
 	out << Key << "name" << Value << "funcs";
@@ -274,8 +273,9 @@ void Prog::printYaml(Emitter &out){
 		func->printYaml(out);
 	}
 	out << EndSeq;
-	out << EndMap;	
+	out << EndMap;
 
+	//externs
 	out << Key << "externs" << Value;
 	out << BeginMap;
 	out << Key << "name" << Value << "externs";
@@ -286,6 +286,5 @@ void Prog::printYaml(Emitter &out){
 	}
 	out << EndSeq;
 	out << EndMap;
-
 	out << EndMap;
 }

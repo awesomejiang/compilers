@@ -20,6 +20,7 @@ include_directories(
 
 set(PARSER_SOURCES
     yaml.cpp
+    check.cpp
 )
 
 add_library(parser

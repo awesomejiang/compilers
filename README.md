@@ -37,3 +37,5 @@ Implemented "-emit-ast" option.
 
     It is really fair, because I do not set destructors for my AST tree node which will cause memory leak for pointer members.
 
+## Assignment 2 Add Constraints and Type Inference
+Refined "-emit-ast" option.

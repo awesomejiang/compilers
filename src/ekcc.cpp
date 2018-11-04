@@ -11,22 +11,33 @@ extern Prog *rootProg;
 
 int main(int argc, char **argv){
 	auto args = setupArgs(argc, argv);
-	if(args.ast){	//print ast
+
+	int ret;
+	try{
 		auto ifs= std::ifstream(args.input);
 		Lexer lexer(&ifs);
 
 		auto parserPtr = new bison::Parser(lexer, *rootProg);
 		parserPtr->parse();
 
-		YAML::Emitter out;
+		//check constraints
 		if(rootProg)
-			rootProg->printYaml(out);
+			rootProg->check();
 
-		std::ofstream ofs(args.output);
-		ofs << "---\n";
-		ofs << out.c_str();
-		ofs << "\n..." << std::endl;
+		if(args.ast){	//print ast
+			YAML::Emitter out;
+			if(rootProg)
+				rootProg->printYaml(out);
+
+			std::ofstream ofs(args.output);
+			ofs << "---\n";
+			ofs << out.c_str();
+			ofs << "\n..." << std::endl;
+		}
+	} catch(std::runtime_error& e){
+		std::cerr << e.what() << std::endl;
+		ret = 1;
 	}
 
-	return 0;
+	return ret;
 }
