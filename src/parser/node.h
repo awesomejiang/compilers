@@ -10,6 +10,9 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <llvm/IR/Type.h>
+#include <llvm/IR/IRBuilder.h>
+
 using std::vector;
 using std::string;
 
