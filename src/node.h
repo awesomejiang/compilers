@@ -37,6 +37,7 @@ class Node{
 public:
 	virtual void printYaml(YAML::Emitter &out) {}
 	virtual void check() {}
+	virtual void codegen() {}
 };
 
 
