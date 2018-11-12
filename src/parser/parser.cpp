@@ -643,7 +643,7 @@ namespace bison {
 
   case 11:
 #line 135 "/home/jiawei/Dropbox/Graduate/COMPILERS/compilers/src/parser/parser.y" // lalr1.cc:859
-    {(yylhs.value.funcdeclType) = new FuncDecl((yystack_[5].value.tdeclType), (yystack_[4].value.globidType), (yystack_[2].value.vdeclsType), (yystack_[0].value.blkType));}
+    {(yylhs.value.funcdeclType) = new FuncDecl((yystack_[5].value.tdeclType), (yystack_[4].value.globidType), (yystack_[0].value.blkType), (yystack_[2].value.vdeclsType));}
 #line 648 "/home/jiawei/Dropbox/Graduate/COMPILERS/compilers/src/parser/parser.cpp" // lalr1.cc:859
     break;
 

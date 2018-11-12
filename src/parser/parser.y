@@ -132,7 +132,7 @@ funcs :
 |	func {$$ = new FuncList(); $$->push_back($1);}
 
 func :
-	DEF type globid LPAREN vdecls RPAREN blk {$$ = new FuncDecl($2, $3, $5, $7);}
+	DEF type globid LPAREN vdecls RPAREN blk {$$ = new FuncDecl($2, $3, $7, $5);}
 |	DEF type globid LPAREN RPAREN blk {$$ = new FuncDecl($2, $3, $6);}
 
 blk :
