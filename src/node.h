@@ -41,7 +41,7 @@ using std::string;
 class Exp;
 class Stmt;
 class VarDecl;
-class Type;
+class NType;
 class Blk;
 class Extern;
 class FuncDecl;
@@ -50,7 +50,7 @@ class Prog;
 using ExpList = vector<Exp*>;
 using StmtList = vector<Stmt*>;
 using VarList = vector<VarDecl*>;
-using TypeList = vector<Type*>;
+using TypeList = vector<NType*>;
 using ExternList = vector<Extern*>;
 using FuncList = vector<FuncDecl*>;
 
@@ -124,9 +124,9 @@ public:
 	virtual llvm::Value* codegen();
 };
 
-class Type: public Node{
+class NType: public Node{
 public:
-	Type(string const &name)
+	NType(string const &name)
 	: name{name} {}
 	void setRef(){
 		if(name == "void")
@@ -153,24 +153,24 @@ private:
 
 class VarDecl: public Node{
 public:
-	VarDecl(Type* const type, Var* const var)
+	VarDecl(NType* const type, Var* const var)
 	: type{type}, var{var} {
 		if(type->getName() == "void")
 			throw std::runtime_error("error: void is not allowed in variable declaration.");
 	}
-	Type* getType(){return type;}
+	NType* getType(){return type;}
 	Var* getVar(){return var;}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
 	virtual llvm::Value* codegen();
 private:
-	Type *type;
+	NType *type;
 	Var *var;
 };
 
 class FuncDecl: public Node{
 public:
-	FuncDecl(Type* const type, Globid* const globid, Blk* const blk, VarList* const vdecls = nullptr)
+	FuncDecl(NType* const type, Globid* const globid, Blk* const blk, VarList* const vdecls = nullptr)
 	: type{type}, globid{globid}, args{vdecls}, blk{blk} {
 		if(type->getRef())
 			throw std::runtime_error("error: function should not return a ref type.");
@@ -179,7 +179,7 @@ public:
 	virtual void check();
 	virtual llvm::Value* codegen();
 private:
-	Type *type;
+	NType *type;
 	Globid *globid;
 	VarList *args;
 	Blk *blk;
@@ -342,13 +342,13 @@ public:
 
 class Extern: public Node{
 public:
-	Extern(Type* const type, Globid* const globid, TypeList* const tdecls = nullptr)
+	Extern(NType* const type, Globid* const globid, TypeList* const tdecls = nullptr)
 	: type{type}, globid{globid}, args{tdecls} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
 	virtual llvm::Value* codegen();
 private:
-	Type *type;
+	NType *type;
 	Globid *globid;
 	TypeList *args;
 };

@@ -34,6 +34,10 @@ int main(int argc, char **argv){
 			ofs << out.c_str();
 			ofs << "\n..." << std::endl;
 		}
+		if(args.llvm)
+			if(!rootProg->codegen())
+				std::cout << "return is empty." << std::endl;
+
 	} catch(std::runtime_error& e){
 		std::cerr << e.what() << std::endl;
 		ret = 1;

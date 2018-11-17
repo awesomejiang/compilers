@@ -85,7 +85,7 @@ void PrintSlitStmt::printYaml(Emitter &out){
 	out << Key << "string" << Value << str->name;
 }
 
-void Type::printYaml(Emitter &out){
+void NType::printYaml(Emitter &out){
 	out << Key << "type" << Value << string(isNoalias?"noalias ":"") + string(isRef?"ref ":"") + name;
 }
 

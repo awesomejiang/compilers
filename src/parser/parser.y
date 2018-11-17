@@ -38,7 +38,7 @@
 	ExpList *expsType;
 	VarDecl *vdeclType;
 	VarList *vdeclsType;
-	Type *tdeclType;
+	NType *tdeclType;
 	TypeList *tdeclsType;
 	Globid *globidType;
 	Var *varType;
@@ -205,11 +205,11 @@ globid :
 	IDENT {$$ = new Globid(*$1);}
 
 type :
-	"int" {$$ = new Type{"int"};}
-|	"cint" {$$ = new Type{"cint"};}
-|	"float" {$$ = new Type{"float"};}
-|	"sfloat" {$$ = new Type{"sfloat"};}
-|	"void" {$$ = new Type{"void"};}
+	"int" {$$ = new NType{"int"};}
+|	"cint" {$$ = new NType{"cint"};}
+|	"float" {$$ = new NType{"float"};}
+|	"sfloat" {$$ = new NType{"sfloat"};}
+|	"void" {$$ = new NType{"void"};}
 |	REF type {$2->setRef(); $$ = $2;}
 |	NOALIAS type {$2->setNoalias(); $$ = $2;}
 

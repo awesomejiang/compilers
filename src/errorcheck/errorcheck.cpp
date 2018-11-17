@@ -1,6 +1,6 @@
 #include "node.h"
 
-static std::unordered_map<string, vector<Type>> functionMap;
+static std::unordered_map<string, vector<NType>> functionMap;
 static std::stack<std::unordered_set<string>> varTable;
 
 
@@ -44,7 +44,7 @@ void PrintStmt::check(){
 
 void PrintSlitStmt::check(){}
 
-void Type::check(){}
+void NType::check(){}
 
 void BinOp::check(){
 	if(op == "assign")
@@ -124,7 +124,7 @@ void Blk::check(){
 void FuncDecl::check(){
 	//record function info into functionMap and vartable
 	varTable.emplace();
-	vector<Type> types;
+	vector<NType> types;
 	if(args){
 		for(auto vdeclPtr: *args){
 			types.push_back(*(vdeclPtr->getType()));
@@ -140,7 +140,7 @@ void FuncDecl::check(){
 
 void Extern::check(){
 	//record function info into functionMap
-	vector<Type> types;
+	vector<NType> types;
 	if(args){
 		for(auto typePtr: *args)
 			types.push_back(*typePtr);

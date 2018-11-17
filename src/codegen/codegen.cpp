@@ -8,16 +8,32 @@ static IRBuilder<> Builder(TheContext);
 static std::unique_ptr<Module> TheModule;
 static std::map<std::string, Value *> NamedValues;
 
-Value* LogError(const char *Str)
+static Type *typeOf(NType * const type) {
+    if(type->getName()=="int" || type->getName()=="cint"){
+    	if(type->getRef())
+    		return Type::getInt32PtrTy(TheContext);
+    	else
+    		return Type::getInt32Ty(TheContext);
+    }
+    else if(type->getName()=="float" || type->getName()=="sfloat"){
+    	if(type->getRef())
+    		return Type::getFloatPtrTy(TheContext);
+    	else
+    		return Type::getFloatTy(TheContext);
+    }
+    return Type::getVoidTy(TheContext);
+}
+
+static Value* LogError(string const &Str)
 {
-	printf("%s\n", Str);
+	printf("%s\n", Str.c_str());
 	return nullptr;
 }
 
 Value* Num :: codegen()
 {
 	if (typeName == "int")
-		return ConstantInt::get(llvm::Type::getInt32Ty(TheContext), stoi(val), true);
+		return ConstantInt::get(Type::getInt32Ty(TheContext), stoi(val), true);
 	else if (typeName == "float")
 		return ConstantFP::get(llvm::Type::getFloatTy(TheContext), stod(val));
 	else
@@ -28,7 +44,7 @@ Value* Ident :: codegen()
 {
 	if (NamedValues.find(name) == NamedValues.end())
 		return LogError("Ident: undeclared identifier: " + name);
-	return Builder.CreateLoad(NamedValues[name], "")
+	return Builder.CreateLoad(NamedValues[name], "");
 }
 
 Value* Var :: codegen()
@@ -44,7 +60,7 @@ Value* BinOp :: codegen()
 	Value* R = rhs->codegen();
 	if (!L || !R) return nullptr;
 
-	switch (op)
+	switch (op[0])
 	{
 	case '+':
 		return Builder.CreateFAdd(L, R, "addtmp");
@@ -77,13 +93,13 @@ Value* FuncCall :: codegen()
 	Function* function = TheModule.get()->getFunction(globid->name.c_str());
 	if (!function)
 		return LogError("FuncCall: empty function");
-	if (function->arg_size() != args.size())
+	if (function->arg_size() != args->size())
 		return LogError("FuncCall: incorrect number of arguments");
-	vector<Value*> arguments(args);
-	for (unsigned i = 0, e = args.size(); i != e; i++) {
-		arguments.push_back(args[i]->codegen());
+	vector<Value*> arguments;
+	for (unsigned i = 0, e = args->size(); i != e; i++) {
+		arguments.push_back((*args)[i]->codegen());
 		if (!arguments.back())
-			return nullptr
+			return nullptr;
 	}
 	CallInst* call = Builder.CreateCall(function, makeArrayRef(arguments), "calltmp");
 	return call;
@@ -91,19 +107,19 @@ Value* FuncCall :: codegen()
 
 Value* Blk :: codegen()
 {
-	Value* last = *(statements.rbegin())->codegen();
+	Value* last = statements.back()->codegen();
 	return last;
 }
 
 Value* FuncDecl :: codegen()
 {
 	// prototype double(double, double, ...)
-	vector<Type*> types;
+	vector<llvm::Type*> types;
 	VarList::const_iterator it;
 	if (args)
-		for (it = *args.begin(); it != *args.end(); it++)
-			types.push_back(typeof(**it.type));
-	FunctionType* funcType = FunctionType::get(typeof(type), makeArrayRef(types), false);
+		for (it = args->begin(); it != args->end(); it++)
+			types.push_back(typeOf((*it)->getType()));
+	FunctionType* funcType = FunctionType::get(typeOf(type), makeArrayRef(types), false);
 	Function* function = Function::Create(funcType, GlobalValue::InternalLinkage, globid->name.c_str(), TheModule.get());
 
 	BasicBlock* bblock = BasicBlock::Create(TheContext, "entry", function, 0);
@@ -124,5 +140,29 @@ Value* FuncDecl :: codegen()
 	//	}
 
 	//if (Value* retVal = args)
-	Builder.CreateRet(TheContext)
+	//Builder.CreateRet(TheContext)
+	return nullptr;
 }
+
+Value* AssignStmt::codegen(){}
+Value* PrintSlitStmt::codegen(){}
+Value* Str::codegen(){}
+Value* Node::codegen(){}
+Value* Prog::codegen(){}
+Value* NType::codegen(){}
+Value* Extern::codegen(){}
+Value* Globid::codegen(){}
+Value* IfStmt::codegen(){}
+Value* UaryOp::codegen(){}
+Value* VarDecl::codegen(){}
+Value* PrintStmt::codegen(){}
+Value* WhileStmt::codegen(){}
+Value* Exp::codegen(){}
+
+
+
+
+
+
+
+
