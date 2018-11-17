@@ -7,11 +7,33 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stack>
+#include <cstdio>
 
 #include <yaml-cpp/yaml.h>
 
+#include <stack>
+#include <typeinfo>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Function.h>
 #include <llvm/IR/Type.h>
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/CallingConv.h>
+#include <llvm/IR/IRPrintingPasses.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/Bitcode/BitstreamReader.h>
+#include <llvm/Bitcode/BitstreamWriter.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/MCJIT.h>
+#include <llvm/ExecutionEngine/GenericValue.h>
+#include <llvm/ExecutionEngine/Interpreter.h>
+#include <llvm/ExecutionEngine/MCJIT.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
 using std::vector;
 using std::string;
@@ -37,7 +59,7 @@ class Node{
 public:
 	virtual void printYaml(YAML::Emitter &out) {}
 	virtual void check() {}
-	virtual void codegen() {}
+	virtual llvm::Value* codegen();
 };
 
 
@@ -48,6 +70,7 @@ public:
 	Exp(string const &tn = ""): typeName{tn} {}
 	virtual string getTypeName() {return typeName;}
 	virtual void printYaml(YAML::Emitter &out) {}
+	virtual llvm::Value* codegen();
 	string typeName;
 };
 
@@ -61,6 +84,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	string val;
 };
@@ -70,6 +94,7 @@ public:
 	Str(string const &name): name{name.substr(1, name.size()-2)}, Exp{"slit"} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 	string name;
 };
 
@@ -77,6 +102,7 @@ class Ident: public Exp{
 public:
 	Ident(string const &name): name{name} {}
 	virtual void printYaml(YAML::Emitter &out) {}
+	virtual llvm::Value* codegen();
 
 	string name;
 };
@@ -87,6 +113,7 @@ public:
 	using Ident::Ident;
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 };
 
 class Globid: public Ident{
@@ -94,6 +121,7 @@ public:
 	using Ident::Ident;
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 };
 
 class Type: public Node{
@@ -111,6 +139,7 @@ public:
 	void setNoalias(){isNoalias = true;}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 
 	string getName(){return name;}
 	bool getRef(){return isRef;}
@@ -133,6 +162,7 @@ public:
 	Var* getVar(){return var;}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Type *type;
 	Var *var;
@@ -147,6 +177,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Type *type;
 	Globid *globid;
@@ -159,6 +190,7 @@ public:
 	ExpStmt(Exp* const exp): exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *exp;
 };
@@ -168,6 +200,7 @@ public:
 	AssignStmt(VarDecl* const vdecl, Exp* const exp): vdecl{vdecl}, exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	VarDecl* vdecl;
 	Exp *exp;
@@ -178,6 +211,7 @@ public:
 	ReturnStmt(Exp* const exp = nullptr): exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *exp;
 };
@@ -187,6 +221,7 @@ public:
 	WhileStmt(Exp* const exp, Stmt* const stmt): exp{exp}, stmt{stmt} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *exp;
 	Stmt *stmt;
@@ -198,6 +233,7 @@ public:
 	: exp{exp}, stmt{stmt}, elsestmt{elsestmt} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *exp;
 	Stmt *stmt, *elsestmt;
@@ -208,6 +244,7 @@ public:
 	PrintStmt(Exp* const exp): exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *exp;
 };
@@ -217,6 +254,7 @@ public:
 	PrintSlitStmt(Str* const str): str{str} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Str *str;
 };
@@ -245,6 +283,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *lhs, *rhs;
 	string op;
@@ -269,6 +308,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Exp *exp;
 	string op;
@@ -281,6 +321,7 @@ public:
 	: globid{globid}, args{exps}, Exp{"function"} {}	//function map is not built when constructor is called 
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Globid *globid;
 	ExpList *args;
@@ -294,6 +335,7 @@ public:
 	StmtList statements;
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 };
 
 
@@ -304,6 +346,7 @@ public:
 	: type{type}, globid{globid}, args{tdecls} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 private:
 	Type *type;
 	Globid *globid;
@@ -316,6 +359,7 @@ public:
 	: externs{externs}, funcs{funcdecls} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
+	virtual llvm::Value* codegen();
 
 private:
 	ExternList *externs;
