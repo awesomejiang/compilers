@@ -252,6 +252,7 @@ private:
 class PrintSlitStmt: public Stmt{
 public:
 	PrintSlitStmt(Str* const str): str{str} {}
+	PrintSlitStmt(string const &msg): str{new Str{msg}} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
 	virtual llvm::Value* codegen();

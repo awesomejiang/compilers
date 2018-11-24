@@ -35,8 +35,7 @@ int main(int argc, char **argv){
 			ofs << "\n..." << std::endl;
 		}
 		if(args.llvm)
-			if(!rootProg->codegen())
-				std::cout << "return is empty." << std::endl;
+			rootProg->codegen();
 
 	} catch(std::runtime_error& e){
 		std::cerr << e.what() << std::endl;

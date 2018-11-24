@@ -519,7 +519,7 @@ namespace bison {
     enum
     {
       yyeof_ = 0,
-      yylast_ = 359,     ///< Last index in yytable_.
+      yylast_ = 348,     ///< Last index in yytable_.
       yynnts_ = 21,  ///< Number of nonterminal symbols.
       yyfinal_ = 17, ///< Termination state number.
       yyterror_ = 1,

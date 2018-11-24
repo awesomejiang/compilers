@@ -276,15 +276,18 @@ void Prog::printYaml(Emitter &out){
 	out << EndMap;
 
 	//externs
-	out << Key << "externs" << Value;
-	out << BeginMap;
-	out << Key << "name" << Value << "externs";
-	out << Key << "externs" << Value;
-	out << BeginSeq;
-	for(auto ext: *externs){
-		ext->printYaml(out);
+	if(externs){
+		out << Key << "externs" << Value;
+		out << BeginMap;
+		out << Key << "name" << Value << "externs";
+		out << Key << "externs" << Value;
+		out << BeginSeq;
+		for(auto ext: *externs){
+			ext->printYaml(out);
+		}
+		out << EndSeq;
+		out << EndMap;
 	}
-	out << EndSeq;
-	out << EndMap;
+
 	out << EndMap;
 }

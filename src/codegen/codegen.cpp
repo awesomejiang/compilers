@@ -12,7 +12,7 @@ static std::map<std::string, std::string> NamedTypes;
 static Value* ReturnValue;
 static BasicBlock* CurrentBlock;
 
-static Type *typeOf(NType * const type) {
+static Type *typeOf(NType *type) {
     if(type->getName()=="int" || type->getName()=="cint"){
     	if(type->getRef())
     		return Type::getInt32PtrTy(TheContext);
@@ -116,11 +116,11 @@ Value* FuncDecl :: codegen()
 	Function::arg_iterator ait = function->arg_begin();
 	Value* argValue;
 	if (args)
-		for (it = *args.begin(); it != *args.end(); it++) {
+		for (it = args->begin(); it != args->end(); it++) {
 			(**it).codegen();
 			argValue = &*ait++;
-			argValue->setName((*it)->var->name->name.c_str());
-			StoreInst* inst = Builder.CreateStore(argValue, TheContext[(*it)->var->name->name]);
+			argValue->setName((*it)->getVar()->name.c_str());
+			StoreInst* inst = Builder.CreateStore(argValue, NamedValues[(*it)->getVar()->name]);
 		}
 
 	blk->codegen();
@@ -131,8 +131,8 @@ Value* FuncDecl :: codegen()
 Value* AssignStatementUtil(Exp* hs, Exp* rhs)
 {
 	Var* lhs = (Var*) hs;
-	if (NamedValues.find(lhs->name->name) == NamedValues.end())
-		return alloc;
+	if (NamedValues.find(lhs->name) == NamedValues.end())
+		return nullptr;
 
 	Value* assign_gen = rhs->codegen();
 	Value* assign_rhs;
@@ -152,13 +152,13 @@ Value* AssignStatementUtil(Exp* hs, Exp* rhs)
 	}
 
 	Value* clhs = assign_rhs;
-	string temp = NamedTypes[lhs->name->name];
+	string temp = NamedTypes[lhs->name];
 	if (temp.find("ref int") != string::npos || temp.find("ref cint") != string::npos ||
 		temp.find("ref float") != string::npos || temp.find("ref sfloat") != string::npos) {
-		clhs = Builder.CreateLoad(TheContext[lhs->name->name], "");
+		clhs = Builder.CreateLoad(NamedValues[lhs->name], "");
 		return Builder.CreateStore(assign_rhs, clhs);
 	} else {
-		return Builder.CreateStore(clhs, TheContext[lhs->name->name]);
+		return Builder.CreateStore(clhs, NamedValues[lhs->name]);
 	}
 
 	return nullptr;
@@ -167,37 +167,42 @@ Value* AssignStatementUtil(Exp* hs, Exp* rhs)
 Value* AssignStmt::codegen()
 {
 	Value* alloc = vdecl->codegen();
-	if (exp) AssignStatementUtil(vdecl->var, exp); // NAssignment_codeGen(vdecl->var, exp)
+	if (exp) AssignStatementUtil(vdecl->getVar(), exp); // NAssignment_codeGen(vdecl->var, exp)
 
 	return alloc;
 }
 
-Value* Str::codegen()
-{}
+Value* Str::codegen(){
+	return nullptr;
+}
 
-Value* Node::codegen()
-{}
+Value* Node::codegen(){
+	return nullptr;
+}
 
-Value* NType::codegen()
-{}
+Value* NType::codegen(){
+	return nullptr;
+}
 
 Value* Extern::codegen()
 {
 	vector<Type*> types;
 	for (auto it = (*args).begin(); it != (*args).end(); it++)
-		types.push_back(typeOf(**it));
-	FunctionType* funcType = FunctionType::get(typeOf(type->getName()), makeArrayRef(types), false);
-	Function* function = Function::Create(funcType, GlobalValue::ExternalLinkage, globid->name.c_str(), TheModule);
+		types.push_back(typeOf(*it));
+	FunctionType* funcType = FunctionType::get(typeOf(type), makeArrayRef(types), false);
+	Function* function = Function::Create(funcType, GlobalValue::ExternalLinkage, globid->name.c_str(), TheModule.get());
 	return function;
 }
 
-Value* Globid::codegen(){}
+Value* Globid::codegen(){
+	return nullptr;
+}
 
 Value* VarDecl::codegen()
 {
-	AllocInst* alloc = Builder.CreateAlloca(typeOf(type->getName()), 0, var->name->name.c_str());
-	NamedValues[var->name->name] = alloc;
-	NamedTypes[var->name->name] = type->getName();
+	AllocaInst* alloc = Builder.CreateAlloca(typeOf(type), 0, var->name.c_str());
+	NamedValues[var->name] = alloc;
+	NamedTypes[var->name] = type->getName();
 	return alloc;
 }
 
@@ -219,8 +224,8 @@ Value* PrintStmt::codegen()
 Value* PrintSlitStmt::codegen()
 {
 	Function* function = TheModule.get()->getFunction("printf");
-	string temp = str->substr(1, str->size() - 2);
-	Value vstr = Builder.CreateGlobalStringPtr(temp);
+	string temp = str->name.substr(1, str->name.size() - 2);
+	Value *vstr = Builder.CreateGlobalStringPtr(temp);
 	vector<Value*> int32_params;
 	int32_params.push_back(vstr);
 	CallInst* call = Builder.CreateCall(function, int32_params, "");
@@ -253,7 +258,7 @@ Value* IfStmt::codegen()
 	Value* elseV = nullptr;
 	if (elsestmt) elseV = elsestmt->codegen();
 
-	Builder.Create(bbMerg);
+	Builder.CreateBr(bbMerg);
 	bbElse = Builder.GetInsertBlock();
 
 	function->getBasicBlockList().push_back(bbMerg);
@@ -264,8 +269,8 @@ Value* IfStmt::codegen()
 
 Value* BinOp :: codegen()
 {
-	Insturction::BinaryOps instBin;
-	Insturction::OtherOps instOther;
+	Instruction::BinaryOps instBin;
+	Instruction::OtherOps instOther;
 	CmpInst::Predicate pred;
 
 	Value* clhs = lhs->codegen();
@@ -273,10 +278,10 @@ Value* BinOp :: codegen()
 	if (!clhs || !crhs) return nullptr;
 
 	if (op == "&&") {
-		instBin = Insturction::And;
+		instBin = Instruction::And;
 		return Builder.CreateAnd(clhs, crhs, "");
 	} else if (op == "||") {
-		instBin = Insturction::Or;
+		instBin = Instruction::Or;
 		return Builder.CreateOr(clhs, crhs, "");
 	} else if (op == "=") {
 		return AssignStatementUtil(lhs, rhs);
@@ -286,39 +291,39 @@ Value* BinOp :: codegen()
 	//
 
 	// tpye conversion
-	Value* llhs, * rrsh;
+	Value* llhs, * rrhs;
 	if (typeName.find("float") != string::npos) {
 		if (lhs->typeName.find("float") != string::npos)
 			llhs = clhs;
 		else
 			llhs = Builder.CreateSIToFP(clhs, Type::getFloatTy(TheContext), "");
 		if (rhs->typeName.find("float") != string::npos)
-			rrsh = crhs;
+			rrhs = crhs;
 		else
-			rrsh = Builder.CreateSIToFP(crhs, Type::getFloatTy(TheContext), "");
+			rrhs = Builder.CreateSIToFP(crhs, Type::getFloatTy(TheContext), "");
 	} else if (typeName.find("int") != string::npos) {
 		if (lhs->typeName.find("int") != string::npos)
 			llhs = clhs;
 		else
 			llhs = Builder.CreateFPToSI(clhs, Type::getInt32Ty(TheContext), "");
 		if (rhs->typeName.find("int") != string::npos)
-			rrsh = crhs;
+			rrhs = crhs;
 		else
-			rrsh = Builder.CreateFPToSI(crhs, Type::getInt32Ty(TheContext), "");
+			rrhs = Builder.CreateFPToSI(crhs, Type::getInt32Ty(TheContext), "");
 	} else {
 		llhs = clhs;
-		rrsh = crhs;
+		rrhs = crhs;
 	}
 
 	Value* value;
 	if (typeName == "float" || typeName == "sfloat") {
-		if (op == "+") value = Builder.CreateFAdd(llhs, rrsh, "");
-		else if (op == "-") value = Builder.CreateFSub(llhs, rrsh, "");
-		else if (op == "*") value = Builder.CreateFMul(llhs, rrsh, "");
-		else if (op == "/") value = Builder.CreateFDiv(llhs, rrsh, "");
-		else if (op == "==") value= Builder.CreateFCmpOEQ(llhs, rrsh, "");
-		else if (op == "<") value = Builder.CreateFCmpOLT(llhs, rrsh, "");
-		else if (op == ">") value = Builder.CreateFCmpOGT(llhs, rrsh, "");
+		if (op == "+") value = Builder.CreateFAdd(llhs, rrhs, "");
+		else if (op == "-") value = Builder.CreateFSub(llhs, rrhs, "");
+		else if (op == "*") value = Builder.CreateFMul(llhs, rrhs, "");
+		else if (op == "/") value = Builder.CreateFDiv(llhs, rrhs, "");
+		else if (op == "==") value= Builder.CreateFCmpOEQ(llhs, rrhs, "");
+		else if (op == "<") value = Builder.CreateFCmpOLT(llhs, rrhs, "");
+		else if (op == ">") value = Builder.CreateFCmpOGT(llhs, rrhs, "");
 		if (typeName == "float") {
 			FastMathFlags fmf;
 			fmf.setUnsafeAlgebra();
@@ -326,32 +331,32 @@ Value* BinOp :: codegen()
 		}
 		return value;
 	} else if (typeName == "int" || typeName == "cint") {
-		if (op == "==") value = Builder.CreateICmpEQ(llhs, rrsh, "");
-		else if (op == "<") value = Builder.CreateICmpSLT(llhs, rrsh, "");
-		else if (op == ">") value = Builder.CreateICmpSGT(llhs, rrsh, "");
+		if (op == "==") value = Builder.CreateICmpEQ(llhs, rrhs, "");
+		else if (op == "<") value = Builder.CreateICmpSLT(llhs, rrhs, "");
+		else if (op == ">") value = Builder.CreateICmpSGT(llhs, rrhs, "");
 		else {
 			if (typeName == "int") {
-				if (op == "+") value = Builder.CreateAdd(llhs, rrsh, "");
-				else if (op == "-") value = Builder.CreateSub(llhs, rrsh, "");
-				else if (op == "*") value = Builder.CreateMul(llhs, rrsh, "");
-				else if (op == "/") value = Builder.CreateSDiv(llhs, rrsh, "");
+				if (op == "+") value = Builder.CreateAdd(llhs, rrhs, "");
+				else if (op == "-") value = Builder.CreateSub(llhs, rrhs, "");
+				else if (op == "*") value = Builder.CreateMul(llhs, rrhs, "");
+				else if (op == "/") value = Builder.CreateSDiv(llhs, rrhs, "");
 			} else { // cint
 				if (op == "/")
-					value = Builder.CreateSDiv(llhs, rrsh, "");
+					value = Builder.CreateSDiv(llhs, rrhs, "");
 				else {
 					Value* errV;
 					string errInfo;
 					if (op == "+") {
-						errV = Instrinsic::getDeclaration(
-							TheModule, Instrinsic::sadd_with_overflow, Type::getInt32Ty(TheContext));
+						errV = Intrinsic::getDeclaration(
+							TheModule.get(), Intrinsic::sadd_with_overflow, Type::getInt32Ty(TheContext));
 						errInfo = ",Add operation overflows!,";
 					} else if (op == "-") {
-						errV = Instrinsic::getDeclaration(
-							TheModule, Instrinsic::ssub_with_overflow, Type::getInt32Ty(TheContext));
+						errV = Intrinsic::getDeclaration(
+							TheModule.get(), Intrinsic::ssub_with_overflow, Type::getInt32Ty(TheContext));
 						errInfo = ",Sub operation overflows!,";
 					} else if (op == "*") {
-						errV = Instrinsic::getDeclaration(
-							TheContext, Instrinsic::smul_with_overflow, Type::getInt32Ty(TheContext));
+						errV = Intrinsic::getDeclaration(
+							TheModule.get(), Intrinsic::smul_with_overflow, Type::getInt32Ty(TheContext));
 						errInfo = ",Mul operation overflows!,";
 					}
 					auto *SBinaryOperatorWithOverflow = Builder.CreateCall(errV, {llhs, rrhs}, "t");
@@ -412,7 +417,7 @@ Value* WhileStmt::codegen()
 	Builder.SetInsertPoint(bbThen);
 	Value* thenV = stmt->codegen();
 
-	Builder.Create(bbCond);
+	Builder.CreateBr(bbCond);
 	bbThen = Builder.GetInsertBlock();
 
 	function->getBasicBlockList().push_back(bbMerg);
@@ -420,13 +425,16 @@ Value* WhileStmt::codegen()
 	return nullptr;
 }
 
-Value* Exp::codegen(){}
+Value* Exp::codegen(){
+	return nullptr;
+}
 
 Value* Prog::codegen()
 {
 	if (externs)
-		externs->codegen();
-	if (funcs)
-		funcs->codegen();
+		for(auto ext: *externs)
+			ext->codegen();
+	for(auto func: *funcs)
+		func->codegen();
 	return nullptr;
 }

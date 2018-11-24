@@ -1218,8 +1218,8 @@ namespace bison {
      -53,    36,    83,   -53,   -53,   -53,   -53,   -53,   312,    67,
      224,   224,   -53,   133,    53,   -53,   152,   249,   -53,   -53,
      224,   224,   224,   224,   224,   224,   224,   224,   224,   224,
-     -53,   212,   224,   261,   275,   -53,   -53,   -53,   -53,   323,
-     141,   -53,   -53,    67,    67,    43,    43,   344,   334,   -53,
+     -53,   212,   224,   261,   275,   -53,   -53,   -53,   -53,   312,
+     141,   -53,   -53,    67,    67,    43,    43,   333,   323,   -53,
       -6,   312,   164,   180,   180,   -53,   224,   -53,    69,   -53,
      312,   180,   -53
   };
@@ -1295,8 +1295,7 @@ namespace bison {
      114,    13,    14,     0,     0,    28,    13,    14,    80,    81,
       32,     0,    82,    83,    84,    85,    86,    87,    88,    89,
       81,     0,     0,    82,    83,    84,    85,    86,    87,    88,
-      89,    81,     0,     0,    82,    83,    84,    85,    86,    87,
-      88,    81,     0,     0,    82,    83,    84,    85,    86,    87
+      81,     0,     0,    82,    83,    84,    85,    86,    87
   };
 
   const signed char
@@ -1336,8 +1335,7 @@ namespace bison {
       35,    31,    32,    -1,    -1,    35,    31,    32,     6,     7,
       35,    -1,    10,    11,    12,    13,    14,    15,    16,    17,
        7,    -1,    -1,    10,    11,    12,    13,    14,    15,    16,
-      17,     7,    -1,    -1,    10,    11,    12,    13,    14,    15,
-      16,     7,    -1,    -1,    10,    11,    12,    13,    14,    15
+       7,    -1,    -1,    10,    11,    12,    13,    14,    15
   };
 
   const unsigned char
@@ -1494,7 +1492,7 @@ namespace bison {
 
 #line 7 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:1181
 } // bison
-#line 1498 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:1181
+#line 1496 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:1181
 #line 227 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:1182
 
 

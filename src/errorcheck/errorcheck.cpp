@@ -150,8 +150,9 @@ void Extern::check(){
 }
 
 void Prog::check(){
-	for(auto ext: *externs)
-		ext->check();
+	if(externs)
+		for(auto ext: *externs)
+			ext->check();
 	for(auto func: *funcs)
 		func->check();
 

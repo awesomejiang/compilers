@@ -168,7 +168,7 @@ exp :
 |	globid LPAREN exps RPAREN {$$ = new FuncCall($1, $3);}
 |	globid LPAREN RPAREN {$$ = new FuncCall($1);}
 
-%left "=";
+%right "=";
 %left "||";
 %left "&&";
 %left "==";
