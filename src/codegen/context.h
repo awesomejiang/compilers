@@ -31,8 +31,6 @@
 #include <typeinfo>
 #include <unordered_map>
 
-static llvm::LLVMContext MyContext;
-static llvm::IRBuilder<> Builder(MyContext);
 
 using std::unordered_map<std::string, std::shared_ptr<llvm::Value>> VarTable;
 using std::unordered_map<std::string, std::string> TypeTable;
@@ -49,7 +47,7 @@ class CodeGenContext {
 public:
     std::shared_ptr<llvm::Module> module;
     
-    CodeGenContext(): module{std::make_shared<llvm::Module>("main", MyContext)} {}
+    CodeGenContext(): module{std::make_shared<llvm::Module>("main", TheContext)}, Builder(TheContext) {}
 
     void setOpt(bool to_opt) {
         opt = to_opt;
@@ -96,7 +94,7 @@ public:
     	return nullptr;
     }
     
-    void pushBlock(std::shared_ptr<BasicBlock> block) {
+    void pushBlock(BasicBlock *block) {
     	blocks.push(std::make_shared<CodeGenBlock>());
     	blocks.top()->block = std::make_shared(*block);
     }
@@ -105,7 +103,7 @@ public:
     	blocks.pop();
     }
 
-    void setCurrentReturnValue(std::shared_ptr<llvm::Value> const &value) {
+    void setCurrentReturnValue(llvm::Value *value) {
         if (!blocks.empty()) {
             blocks.top()->returnValue = value;
         }
@@ -118,6 +116,8 @@ public:
         return nullptr;
     }
 private:
+    llvm::LLVMContext TheContext;
+    llvm::IRBuilder<> Builder;
     std::stack<CodeGenBlock *> blocks;
     llvm::Function *mainFunction = nullptr;
     bool opt = false;
