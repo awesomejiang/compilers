@@ -1,4 +1,5 @@
 #include "node.h"
+#include "context.h"
 
 using namespace std;
 using namespace llvm;
@@ -172,18 +173,6 @@ Value* AssignStmt::codegen()
 	return alloc;
 }
 
-Value* Str::codegen(){
-	return nullptr;
-}
-
-Value* Node::codegen(){
-	return nullptr;
-}
-
-Value* NType::codegen(){
-	return nullptr;
-}
-
 Value* Extern::codegen()
 {
 	vector<Type*> types;
@@ -194,9 +183,6 @@ Value* Extern::codegen()
 	return function;
 }
 
-Value* Globid::codegen(){
-	return nullptr;
-}
 
 Value* VarDecl::codegen()
 {
@@ -422,10 +408,6 @@ Value* WhileStmt::codegen()
 
 	function->getBasicBlockList().push_back(bbMerg);
 	Builder.SetInsertPoint(bbMerg);
-	return nullptr;
-}
-
-Value* Exp::codegen(){
 	return nullptr;
 }
 
