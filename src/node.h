@@ -16,6 +16,8 @@
 using std::vector;
 using std::string;
 
+class CodeGenContext;
+
 class Exp;
 class Stmt;
 class VarDecl;
@@ -37,7 +39,7 @@ class Node{
 public:
 	virtual void printYaml(YAML::Emitter &out) {}
 	virtual void check() {}
-	virtual llvm::Value* codegen() {return nullptr;}
+	virtual llvm::Value* codegen(CodeGenContext &context) {return nullptr;}
 };
 
 
@@ -61,7 +63,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	string val;
 };
@@ -78,7 +80,7 @@ class Ident: public Exp{
 public:
 	Ident(string const &name): name{name} {}
 	virtual void printYaml(YAML::Emitter &out) {}
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 
 	string name;
 };
@@ -89,7 +91,7 @@ public:
 	using Ident::Ident;
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 };
 
 class Globid: public Ident{
@@ -136,7 +138,7 @@ public:
 	Var* getVar(){return var;}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	NType *type;
 	Var *var;
@@ -151,7 +153,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	NType *type;
 	Globid *globid;
@@ -164,7 +166,7 @@ public:
 	ExpStmt(Exp* const exp): exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *exp;
 };
@@ -174,7 +176,7 @@ public:
 	AssignStmt(VarDecl* const vdecl, Exp* const exp): vdecl{vdecl}, exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	VarDecl* vdecl;
 	Exp *exp;
@@ -185,7 +187,7 @@ public:
 	ReturnStmt(Exp* const exp = nullptr): exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *exp;
 };
@@ -195,7 +197,7 @@ public:
 	WhileStmt(Exp* const exp, Stmt* const stmt): exp{exp}, stmt{stmt} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *exp;
 	Stmt *stmt;
@@ -207,7 +209,7 @@ public:
 	: exp{exp}, stmt{stmt}, elsestmt{elsestmt} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *exp;
 	Stmt *stmt, *elsestmt;
@@ -218,7 +220,7 @@ public:
 	PrintStmt(Exp* const exp): exp{exp} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *exp;
 };
@@ -229,7 +231,7 @@ public:
 	PrintSlitStmt(string const &msg): str{new Str{msg}} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Str *str;
 };
@@ -258,7 +260,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *lhs, *rhs;
 	string op;
@@ -283,7 +285,7 @@ public:
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Exp *exp;
 	string op;
@@ -296,7 +298,7 @@ public:
 	: globid{globid}, args{exps}, Exp{"function"} {}	//function map is not built when constructor is called 
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	Globid *globid;
 	ExpList *args;
@@ -310,7 +312,7 @@ public:
 	StmtList statements;
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 };
 
 
@@ -321,7 +323,7 @@ public:
 	: type{type}, globid{globid}, args{tdecls} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 private:
 	NType *type;
 	Globid *globid;
@@ -334,7 +336,7 @@ public:
 	: externs{externs}, funcs{funcdecls} {}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
-	virtual llvm::Value* codegen();
+	virtual llvm::Value* codegen(CodeGenContext &context);
 
 private:
 	ExternList *externs;

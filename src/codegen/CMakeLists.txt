@@ -1,4 +1,5 @@
 set(SOURCES
+    context.cpp
     codegen.cpp
 )
 
@@ -7,7 +8,7 @@ add_library(codegen
 )
 
 llvm_map_components_to_libnames(llvm_libs
-    support core irreader interpreter mcjit native
+    support core irreader interpreter mcjit native ipo
 )
 
 target_link_libraries(codegen

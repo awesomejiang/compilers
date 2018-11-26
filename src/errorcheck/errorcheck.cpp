@@ -153,8 +153,9 @@ void Prog::check(){
 	if(externs)
 		for(auto ext: *externs)
 			ext->check();
-	for(auto func: *funcs)
-		func->check();
+	if(funcs)
+		for(auto func: *funcs)
+			func->check();
 
 	//check if there is a "run" function
 	if(functionMap.find("run")==functionMap.end()	//no run

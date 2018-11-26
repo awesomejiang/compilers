@@ -1,6 +1,8 @@
 #include "util/util.h"
+#include "node.h"
 #include "parser/parser.hpp"
 #include "parser/lexer.h"
+#include "codegen/context.h"
 
 #include <fstream>
 #include <iostream>
@@ -34,8 +36,16 @@ int main(int argc, char **argv){
 			ofs << out.c_str();
 			ofs << "\n..." << std::endl;
 		}
-		if(args.llvm)
-			rootProg->codegen();
+		if(args.llvm){
+			llvm::InitializeNativeTarget();
+			llvm::InitializeNativeTargetAsmPrinter();
+			llvm::InitializeNativeTargetAsmParser();
+			CodeGenContext context;
+			context.setOpt(args.optimization);
+			context.setJit(args.jit);
+			context.generateCode(*rootProg);
+			context.printGenCode();
+		}
 
 	} catch(std::runtime_error& e){
 		std::cerr << e.what() << std::endl;

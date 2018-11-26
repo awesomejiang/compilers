@@ -34,17 +34,18 @@ CompileArgs setupArgs(int argc, char **argv){
 			args.llvm = true;
 		}
 		else if(arg == "-o"){	//output and input file, required
-			args.output = argv[i+1];
-			args.input = argv[i+2];
-			i += 2;
+			args.output = argv[i++];
+		}
+		else if(arg == "-jit"){
+			args.jit = true;
 		}
 		else{
-			printUsage();
-			exit(0);
+			args.input = arg;
 		}
 	}
 
-	if(args.output == "" || args.output == ""){
+	//
+	if(args.input == "" || args.output == ""){
 		printUsage();
 		exit(0);
 	}

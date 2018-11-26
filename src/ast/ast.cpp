@@ -264,17 +264,19 @@ void Prog::printYaml(Emitter &out){
 	out << Key << "name" << Value << "prog";
 
 	//functions
-	out << Key << "funcs" << Value;
-	out << BeginMap;
-	out << Key << "name" << Value << "funcs";
-	out << Key << "funcs" << Value;
-	out << BeginSeq;
-	for(auto func: *funcs){
-		func->printYaml(out);
+	if(funcs){
+		out << Key << "funcs" << Value;
+		out << BeginMap;
+		out << Key << "name" << Value << "funcs";
+		out << Key << "funcs" << Value;
+		out << BeginSeq;
+		for(auto func: *funcs){
+			func->printYaml(out);
+		}
+		out << EndSeq;
+		out << EndMap;
 	}
-	out << EndSeq;
-	out << EndMap;
-
+	
 	//externs
 	if(externs){
 		out << Key << "externs" << Value;

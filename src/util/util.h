@@ -21,6 +21,7 @@ private:
 struct CompileArgs{
 	bool verbose = false;
 	bool optimization = false;
+	bool jit = false;
 	bool ast = false;
 	bool llvm = false;
 	std::string input, output;
