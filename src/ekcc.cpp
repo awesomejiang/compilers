@@ -53,7 +53,7 @@ int main(int argc, char **argv){
 					llvm::raw_string_ostream ros(os);
 					context.printGenCode(ros);
 					auto tail = os.find("  ret void\n");
-					os.insert(tail, "  call void @run()\n");
+					os.insert(tail, "  call i32 @run()\n");
             		std::ofstream ofs(args.output);
 					ofs << os;
 				}

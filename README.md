@@ -39,3 +39,9 @@ Implemented "-emit-ast" option.
 
 ## Assignment 2 Add Constraints and Type Inference
 Refined "-emit-ast" option.
+
+## Assignment 3 IR Generator
+Implemented code generator, not support JIT yet.
+
+## Assignment 4 Optimizer
+Add optimizer support to out compiler.
