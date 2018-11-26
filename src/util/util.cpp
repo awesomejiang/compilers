@@ -34,7 +34,7 @@ CompileArgs setupArgs(int argc, char **argv){
 			args.llvm = true;
 		}
 		else if(arg == "-o"){	//output and input file, required
-			args.output = argv[i++];
+			args.output = argv[++i];
 		}
 		else if(arg == "-jit"){
 			args.jit = true;

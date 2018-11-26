@@ -23,7 +23,7 @@ static Type *typeOf(CodeGenContext &context, NType *type) {
 
 static Value* LogError(string const &Str)
 {
-	printf("%s\n", Str.c_str());
+	throw runtime_error(Str);
 	return nullptr;
 }
 
@@ -294,12 +294,11 @@ Value* BinOp :: codegen(CodeGenContext &context)
 	}
 
 	// reference type
+	auto types = context.getTypes();
 	for(auto p: {make_pair(lhs, clhs), make_pair(rhs, crhs)}){
 		auto ptr = dynamic_cast<Var*>(p.first);
-		if(ptr){
-			auto type = context.getTypes()[ptr->name];
+		if(ptr && types[ptr->name]->getRef())
 			p.second = context.Builder.CreateLoad(p.second, "");
-		}
 	}
 
 	// tpye conversion
@@ -329,6 +328,7 @@ Value* BinOp :: codegen(CodeGenContext &context)
 	}
 
 	Value* value = nullptr;
+	cout << "Ret bin: " << typeName << endl;
 	if (typeName == "float" || typeName == "sfloat") {
 		if (op == "+") value = context.Builder.CreateFAdd(llhs, rrhs, "");
 		else if (op == "-") value = context.Builder.CreateFSub(llhs, rrhs, "");
