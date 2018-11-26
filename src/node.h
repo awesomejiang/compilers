@@ -48,7 +48,6 @@ class Stmt: public Node {};
 class Exp: public Node{
 public:
 	Exp(string const &tn = ""): typeName{tn} {}
-	virtual string getTypeName() {return typeName;}
 	virtual void printYaml(YAML::Emitter &out) {}
 	string typeName;
 };
@@ -129,10 +128,11 @@ private:
 
 class VarDecl: public Node{
 public:
-	VarDecl(NType* const type, Var* const var)
-	: type{type}, var{var} {
+	VarDecl(NType* const _type, Var* const _var)
+	: type{_type}, var{_var} {
 		if(type->getName() == "void")
 			throw std::runtime_error("error: void is not allowed in variable declaration.");
+		var->typeName = type->getName(); //note: this command cannot change vars in binop, confused
 	}
 	NType* getType(){return type;}
 	Var* getVar(){return var;}
@@ -241,22 +241,7 @@ public:
 	BinOp(Exp* const exp1, string const &sym, Exp* const exp2)
 	: lhs{exp1}, rhs{exp2} {
 		op = whichBinOp(sym);
-		if(op == "==" || op == "<" || op == ">")
-			typeName = "int";
-		else if(exp1->getTypeName() == exp2->getTypeName()){
-			typeName = exp1->getTypeName();
-		}
-		else{
-			auto name1 = exp1->getTypeName(), name2 = exp2->getTypeName();
-			if(name1 == "float" || name2 == "float")
-				typeName = "float";
-			if(name1 == "sfloat" || name2 == "sfloat")
-				typeName = "sfloat";
-			if(name1 == "int" || name2 == "int")
-				typeName = "int";
-			if(name1 == "cint" || name2 == "cint")
-				typeName = "cint";
-		}
+		setTypeName();
 	}
 	virtual void printYaml(YAML::Emitter &out);
 	virtual void check();
@@ -273,13 +258,31 @@ private:
 		};
 		return m[op];
 	}
+	void setTypeName(){
+		if(op == "eq" || op == "lt" || op == "gt")
+			typeName = "int";
+		else if(lhs->typeName == rhs->typeName){
+			typeName = lhs->typeName;
+		}
+		else{
+			auto name1 = lhs->typeName, name2 = rhs->typeName;
+			if(name1 == "float" || name2 == "float")
+				typeName = "float";
+			if(name1 == "sfloat" || name2 == "sfloat")
+				typeName = "sfloat";
+			if(name1 == "int" || name2 == "int")
+				typeName = "int";
+			if(name1 == "cint" || name2 == "cint")
+				typeName = "cint";
+		}
+	}
 };
 
 class UaryOp: public Exp{
 public:
 	UaryOp(string const &op, Exp* const exp): op{op}, exp{exp} {
 		if(op == "-")
-			typeName = exp->getTypeName();
+			typeName = exp->typeName;
 		else
 			typeName = "int";
 	}

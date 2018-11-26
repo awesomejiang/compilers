@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.1.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2015, 2018 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 
 // First part of user declarations.
 
-#line 37 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:407
+#line 37 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -47,9 +47,9 @@
 
 // User implementation prologue.
 
-#line 51 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:415
+#line 51 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:412
 // Unqualified %code blocks.
-#line 21 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:416
+#line 21 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:413
 
 	#include "node.h"
 	Prog *rootProg;
@@ -57,7 +57,7 @@
 	static int yylex(bison::Parser::semantic_type *yylval,
 	Lexer &lexer);
 
-#line 61 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:416
+#line 61 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:413
 
 
 #ifndef YY_
@@ -69,15 +69,6 @@
 # endif
 # ifndef YY_
 #  define YY_(msgid) msgid
-# endif
-#endif
-
-// Whether we are compiled with exception support.
-#ifndef YY_EXCEPTIONS
-# if defined __GNUC__ && !defined __EXCEPTIONS
-#  define YY_EXCEPTIONS 0
-# else
-#  define YY_EXCEPTIONS 1
 # endif
 #endif
 
@@ -98,7 +89,7 @@
     {                                           \
       *yycdebug_ << Title << ' ';               \
       yy_print_ (*yycdebug_, Symbol);           \
-      *yycdebug_ << '\n';                       \
+      *yycdebug_ << std::endl;                  \
     }                                           \
   } while (false)
 
@@ -117,9 +108,9 @@
 #else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE (Symbol)
-# define YY_REDUCE_PRINT(Rule)           static_cast<void> (0)
-# define YY_STACK_PRINT()                static_cast<void> (0)
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
+# define YY_STACK_PRINT()                static_cast<void>(0)
 
 #endif // !YYDEBUG
 
@@ -131,9 +122,9 @@
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 7 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:491
+#line 7 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:479
 namespace bison {
-#line 137 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:491
+#line 128 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -192,24 +183,30 @@ namespace bison {
   | Symbol types.  |
   `---------------*/
 
+  inline
   Parser::syntax_error::syntax_error (const std::string& m)
     : std::runtime_error (m)
   {}
 
   // basic_symbol.
   template <typename Base>
+  inline
   Parser::basic_symbol<Base>::basic_symbol ()
     : value ()
   {}
 
   template <typename Base>
+  inline
   Parser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
     : Base (other)
-    , value (other.value)
+    , value ()
   {
+    value = other.value;
   }
 
+
   template <typename Base>
+  inline
   Parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v)
     : Base (t)
     , value (v)
@@ -218,18 +215,21 @@ namespace bison {
 
   /// Constructor for valueless symbols.
   template <typename Base>
+  inline
   Parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t)
     : Base (t)
     , value ()
   {}
 
   template <typename Base>
+  inline
   Parser::basic_symbol<Base>::~basic_symbol ()
   {
     clear ();
   }
 
   template <typename Base>
+  inline
   void
   Parser::basic_symbol<Base>::clear ()
   {
@@ -237,6 +237,7 @@ namespace bison {
   }
 
   template <typename Base>
+  inline
   bool
   Parser::basic_symbol<Base>::empty () const
   {
@@ -244,32 +245,38 @@ namespace bison {
   }
 
   template <typename Base>
+  inline
   void
   Parser::basic_symbol<Base>::move (basic_symbol& s)
   {
-    super_type::move (s);
+    super_type::move(s);
     value = s.value;
   }
 
   // by_type.
+  inline
   Parser::by_type::by_type ()
     : type (empty_symbol)
   {}
 
+  inline
   Parser::by_type::by_type (const by_type& other)
     : type (other.type)
   {}
 
+  inline
   Parser::by_type::by_type (token_type t)
     : type (yytranslate_ (t))
   {}
 
+  inline
   void
   Parser::by_type::clear ()
   {
     type = empty_symbol;
   }
 
+  inline
   void
   Parser::by_type::move (by_type& that)
   {
@@ -277,6 +284,7 @@ namespace bison {
     that.clear ();
   }
 
+  inline
   int
   Parser::by_type::type_get () const
   {
@@ -285,20 +293,24 @@ namespace bison {
 
 
   // by_state.
+  inline
   Parser::by_state::by_state ()
     : state (empty_state)
   {}
 
+  inline
   Parser::by_state::by_state (const by_state& other)
     : state (other.state)
   {}
 
+  inline
   void
   Parser::by_state::clear ()
   {
     state = empty_state;
   }
 
+  inline
   void
   Parser::by_state::move (by_state& that)
   {
@@ -306,10 +318,12 @@ namespace bison {
     that.clear ();
   }
 
+  inline
   Parser::by_state::by_state (state_type s)
     : state (s)
   {}
 
+  inline
   Parser::symbol_number_type
   Parser::by_state::type_get () const
   {
@@ -319,22 +333,21 @@ namespace bison {
       return yystos_[state];
   }
 
+  inline
   Parser::stack_symbol_type::stack_symbol_type ()
   {}
 
-  Parser::stack_symbol_type::stack_symbol_type (const stack_symbol_type& that)
-    : super_type (that.state)
+
+  inline
+  Parser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
+    : super_type (s)
   {
     value = that.value;
-  }
-
-  Parser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
-    : super_type (s, that.value)
-  {
     // that is emptied.
     that.type = empty_symbol;
   }
 
+  inline
   Parser::stack_symbol_type&
   Parser::stack_symbol_type::operator= (const stack_symbol_type& that)
   {
@@ -345,6 +358,7 @@ namespace bison {
 
 
   template <typename Base>
+  inline
   void
   Parser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
   {
@@ -375,6 +389,7 @@ namespace bison {
   }
 #endif
 
+  inline
   void
   Parser::yypush_ (const char* m, state_type s, symbol_type& sym)
   {
@@ -382,6 +397,7 @@ namespace bison {
     yypush_ (m, t);
   }
 
+  inline
   void
   Parser::yypush_ (const char* m, stack_symbol_type& s)
   {
@@ -390,8 +406,9 @@ namespace bison {
     yystack_.push (s);
   }
 
+  inline
   void
-  Parser::yypop_ (unsigned n)
+  Parser::yypop_ (unsigned int n)
   {
     yystack_.pop (n);
   }
@@ -423,7 +440,7 @@ namespace bison {
   }
 #endif // YYDEBUG
 
-  Parser::state_type
+  inline Parser::state_type
   Parser::yy_lr_goto_state_ (state_type yystate, int yysym)
   {
     int yyr = yypgoto_[yysym - yyntokens_] + yystate;
@@ -433,13 +450,13 @@ namespace bison {
       return yydefgoto_[yysym - yyntokens_];
   }
 
-  bool
+  inline bool
   Parser::yy_pact_value_is_default_ (int yyvalue)
   {
     return yyvalue == yypact_ninf_;
   }
 
-  bool
+  inline bool
   Parser::yy_table_value_is_error_ (int yyvalue)
   {
     return yyvalue == yytable_ninf_;
@@ -463,11 +480,11 @@ namespace bison {
     /// The return value of parse ().
     int yyresult;
 
-#if YY_EXCEPTIONS
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
     try
-#endif // YY_EXCEPTIONS
       {
-    YYCDEBUG << "Starting parse\n";
+    YYCDEBUG << "Starting parse" << std::endl;
 
 
     /* Initialize the stack.  The initial state will be set in
@@ -479,7 +496,7 @@ namespace bison {
 
     // A new symbol was pushed on the stack.
   yynewstate:
-    YYCDEBUG << "Entering state " << yystack_[0].state << '\n';
+    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
 
     // Accept?
     if (yystack_[0].state == yyfinal_)
@@ -489,6 +506,7 @@ namespace bison {
 
     // Backup.
   yybackup:
+
     // Try to take a decision without lookahead.
     yyn = yypact_[yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
@@ -498,19 +516,15 @@ namespace bison {
     if (yyla.empty ())
       {
         YYCDEBUG << "Reading a token: ";
-#if YY_EXCEPTIONS
         try
-#endif // YY_EXCEPTIONS
           {
             yyla.type = yytranslate_ (yylex (&yyla.value, lexer));
           }
-#if YY_EXCEPTIONS
         catch (const syntax_error& yyexc)
           {
             error (yyexc);
             goto yyerrlab1;
           }
-#endif // YY_EXCEPTIONS
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
@@ -554,7 +568,7 @@ namespace bison {
     yylen = yyr2_[yyn];
     {
       stack_symbol_type yylhs;
-      yylhs.state = yy_lr_goto_state_ (yystack_[yylen].state, yyr1_[yyn]);
+      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
       /* If YYLEN is nonzero, implement the default value of the
          action: '$$ = $1'.  Otherwise, use the top of the stack.
 
@@ -569,397 +583,393 @@ namespace bison {
 
       // Perform the reduction.
       YY_REDUCE_PRINT (yyn);
-#if YY_EXCEPTIONS
       try
-#endif // YY_EXCEPTIONS
         {
           switch (yyn)
             {
   case 2:
-#line 117 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 117 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.progType) = new Prog((yystack_[1].value.externsType), (yystack_[0].value.funcsType)); rootProg = (yylhs.value.progType);}
-#line 582 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 594 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 3:
-#line 118 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 118 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.progType) = new Prog(nullptr, (yystack_[0].value.funcsType)); rootProg = (yylhs.value.progType);}
-#line 588 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 600 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 4:
-#line 119 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 119 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {/* empty file */}
-#line 594 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 606 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 5:
-#line 122 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 122 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[1].value.externsType)->push_back((yystack_[0].value.externType)); (yylhs.value.externsType) = (yystack_[1].value.externsType);}
-#line 600 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 612 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 6:
-#line 123 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 123 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.externsType) = new ExternList(); (yylhs.value.externsType)->push_back((yystack_[0].value.externType));}
-#line 606 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 618 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 7:
-#line 127 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 127 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.externType) = new Extern((yystack_[5].value.tdeclType), (yystack_[4].value.globidType), (yystack_[2].value.tdeclsType));}
-#line 612 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 624 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 8:
-#line 128 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 128 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.externType) = new Extern((yystack_[4].value.tdeclType), (yystack_[3].value.globidType));}
-#line 618 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 630 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 9:
-#line 131 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 131 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[1].value.funcsType)->push_back((yystack_[0].value.funcdeclType)); (yylhs.value.funcsType) = (yystack_[1].value.funcsType);}
-#line 624 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 636 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 10:
-#line 132 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 132 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.funcsType) = new FuncList(); (yylhs.value.funcsType)->push_back((yystack_[0].value.funcdeclType));}
-#line 630 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 642 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 11:
-#line 135 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 135 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.funcdeclType) = new FuncDecl((yystack_[5].value.tdeclType), (yystack_[4].value.globidType), (yystack_[0].value.blkType), (yystack_[2].value.vdeclsType));}
-#line 636 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 648 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 12:
-#line 136 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 136 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.funcdeclType) = new FuncDecl((yystack_[4].value.tdeclType), (yystack_[3].value.globidType), (yystack_[0].value.blkType));}
-#line 642 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 654 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 13:
-#line 139 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 139 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.blkType) = new Blk(*(yystack_[1].value.blkType));}
-#line 648 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 660 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 14:
-#line 140 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 140 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.blkType) = new Blk();}
-#line 654 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 666 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 15:
-#line 143 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 143 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[1].value.blkType)->statements.push_back((yystack_[0].value.stmtType)); (yylhs.value.blkType) = (yystack_[1].value.blkType);}
-#line 660 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 672 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 16:
-#line 144 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 144 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.blkType) = new Blk(); (yylhs.value.blkType)->statements.push_back((yystack_[0].value.stmtType));}
-#line 666 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 678 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 17:
-#line 147 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 147 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = (yystack_[0].value.blkType);}
-#line 672 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 684 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 18:
-#line 148 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 148 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new ReturnStmt((yystack_[1].value.expType));}
-#line 678 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 690 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 19:
-#line 149 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 149 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new ReturnStmt();}
-#line 684 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 696 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 20:
-#line 150 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 150 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new AssignStmt((yystack_[3].value.vdeclType), (yystack_[1].value.expType));}
-#line 690 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 702 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 21:
-#line 151 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 151 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new ExpStmt((yystack_[1].value.expType));}
-#line 696 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 708 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 22:
-#line 152 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 152 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new WhileStmt((yystack_[2].value.expType), (yystack_[0].value.stmtType));}
-#line 702 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 714 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 23:
-#line 153 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 153 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new IfStmt((yystack_[4].value.expType), (yystack_[2].value.stmtType), (yystack_[0].value.stmtType));}
-#line 708 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 720 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 24:
-#line 154 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 154 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new IfStmt((yystack_[2].value.expType), (yystack_[0].value.stmtType));}
-#line 714 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 726 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 25:
-#line 155 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 155 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new PrintStmt((yystack_[1].value.expType));}
-#line 720 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 732 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 26:
-#line 156 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 156 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.stmtType) = new PrintSlitStmt((yystack_[1].value.strType));}
-#line 726 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 738 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 27:
-#line 159 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 159 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[2].value.expsType)->push_back((yystack_[0].value.expType)); (yylhs.value.expsType) = (yystack_[2].value.expsType);}
-#line 732 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 744 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 28:
-#line 160 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 160 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expsType) = new ExpList(); (yylhs.value.expsType)->push_back((yystack_[0].value.expType));}
-#line 738 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 750 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 29:
-#line 163 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 163 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = (yystack_[1].value.expType);}
-#line 744 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 756 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 30:
-#line 164 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 164 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = (yystack_[0].value.expType);}
-#line 750 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 762 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 31:
-#line 165 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 165 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = (yystack_[0].value.expType);}
-#line 756 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 768 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 32:
-#line 166 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 166 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = (yystack_[0].value.expType);}
-#line 762 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 774 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 33:
-#line 167 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 167 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = (yystack_[0].value.varType);}
-#line 768 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 780 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 34:
-#line 168 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 168 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new FuncCall((yystack_[3].value.globidType), (yystack_[1].value.expsType));}
-#line 774 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 786 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 35:
-#line 169 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 169 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new FuncCall((yystack_[2].value.globidType));}
-#line 780 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 792 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 36:
-#line 180 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 180 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "=", (yystack_[0].value.expType));}
-#line 786 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 798 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 37:
-#line 181 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 181 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "||", (yystack_[0].value.expType));}
-#line 792 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 804 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 38:
-#line 182 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 182 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "&&", (yystack_[0].value.expType));}
-#line 798 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 810 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 39:
-#line 183 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 183 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "==", (yystack_[0].value.expType));}
-#line 804 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 816 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 40:
-#line 184 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 184 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), ">", (yystack_[0].value.expType));}
-#line 810 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 822 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 41:
-#line 185 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 185 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "<", (yystack_[0].value.expType));}
-#line 816 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 828 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 42:
-#line 186 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 186 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "+", (yystack_[0].value.expType));}
-#line 822 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 834 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 43:
-#line 187 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 187 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "-", (yystack_[0].value.expType));}
-#line 828 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 840 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 44:
-#line 188 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 188 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "*", (yystack_[0].value.expType));}
-#line 834 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 846 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 45:
-#line 189 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 189 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new BinOp((yystack_[2].value.expType), "/", (yystack_[0].value.expType));}
-#line 840 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 852 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 46:
-#line 192 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 192 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new UaryOp("!", (yystack_[0].value.expType));}
-#line 846 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 858 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 47:
-#line 193 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 193 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new UaryOp("-", (yystack_[0].value.expType));}
-#line 852 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 864 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 48:
-#line 196 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 196 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.expType) = new Num(*(yystack_[0].value.str));}
-#line 858 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 870 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 49:
-#line 199 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 199 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.strType) = new Str{*(yystack_[0].value.str)};}
-#line 864 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 876 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 50:
-#line 202 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 202 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.varType) = new Var(*(yystack_[0].value.str));}
-#line 870 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 882 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 51:
-#line 205 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 205 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.globidType) = new Globid(*(yystack_[0].value.str));}
-#line 876 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 888 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 52:
-#line 208 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 208 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.tdeclType) = new NType{"int"};}
-#line 882 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 894 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 53:
-#line 209 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 209 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.tdeclType) = new NType{"cint"};}
-#line 888 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 900 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 54:
-#line 210 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 210 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.tdeclType) = new NType{"float"};}
-#line 894 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 906 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 55:
-#line 211 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 211 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.tdeclType) = new NType{"sfloat"};}
-#line 900 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 912 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 56:
-#line 212 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 212 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.tdeclType) = new NType{"void"};}
-#line 906 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 918 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 57:
-#line 213 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 213 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[0].value.tdeclType)->setRef(); (yylhs.value.tdeclType) = (yystack_[0].value.tdeclType);}
-#line 912 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 924 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 58:
-#line 214 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 214 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[0].value.tdeclType)->setNoalias(); (yylhs.value.tdeclType) = (yystack_[0].value.tdeclType);}
-#line 918 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 930 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 59:
-#line 217 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 217 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[2].value.tdeclsType)->push_back((yystack_[0].value.tdeclType)); (yylhs.value.tdeclsType) = (yystack_[2].value.tdeclsType);}
-#line 924 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 936 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 60:
-#line 218 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 218 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.tdeclsType) = new TypeList(); (yylhs.value.tdeclsType)->push_back((yystack_[0].value.tdeclType));}
-#line 930 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 942 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 61:
-#line 221 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 221 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yystack_[2].value.vdeclsType)->push_back((yystack_[0].value.vdeclType)); (yylhs.value.vdeclsType) = (yystack_[2].value.vdeclsType);}
-#line 936 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 948 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 62:
-#line 222 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 222 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.vdeclsType) = new VarList(); (yylhs.value.vdeclsType)->push_back((yystack_[0].value.vdeclType));}
-#line 942 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 954 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
   case 63:
-#line 225 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:870
+#line 225 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:859
     {(yylhs.value.vdeclType) = new VarDecl((yystack_[1].value.tdeclType), (yystack_[0].value.varType));}
-#line 948 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 960 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
     break;
 
 
-#line 952 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:870
+#line 964 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:859
             default:
               break;
             }
         }
-#if YY_EXCEPTIONS
       catch (const syntax_error& yyexc)
         {
           error (yyexc);
           YYERROR;
         }
-#endif // YY_EXCEPTIONS
       YY_SYMBOL_PRINT ("-> $$ =", yylhs);
       yypop_ (yylen);
       yylen = 0;
@@ -1079,12 +1089,12 @@ namespace bison {
 
     return yyresult;
   }
-#if YY_EXCEPTIONS
     catch (...)
       {
-        YYCDEBUG << "Exception caught: cleaning lookahead and stack\n";
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
         // Do not try to display the values of the reclaimed symbols,
-        // as their printers might throw an exception.
+        // as their printer might throw an exception.
         if (!yyla.empty ())
           yy_destroy_ (YY_NULLPTR, yyla);
 
@@ -1095,13 +1105,12 @@ namespace bison {
           }
         throw;
       }
-#endif // YY_EXCEPTIONS
   }
 
   void
   Parser::error (const syntax_error& yyexc)
   {
-    error (yyexc.what ());
+    error (yyexc.what());
   }
 
   // Generate an error message.
@@ -1177,13 +1186,12 @@ namespace bison {
         case N:                               \
           yyformat = S;                       \
         break
-      default: // Avoid compiler warnings.
-        YYCASE_ (0, YY_("syntax error"));
-        YYCASE_ (1, YY_("syntax error, unexpected %s"));
-        YYCASE_ (2, YY_("syntax error, unexpected %s, expecting %s"));
-        YYCASE_ (3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-        YYCASE_ (4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-        YYCASE_ (5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+        YYCASE_(0, YY_("syntax error"));
+        YYCASE_(1, YY_("syntax error, unexpected %s"));
+        YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+        YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+        YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+        YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
 #undef YYCASE_
       }
 
@@ -1206,7 +1214,7 @@ namespace bison {
 
   const signed char Parser::yytable_ninf_ = -1;
 
-  const short
+  const short int
   Parser::yypact_[] =
   {
       41,   220,   220,    10,    41,   -53,   -11,   -53,   -53,   -53,
@@ -1421,18 +1429,18 @@ namespace bison {
            i_end = yystack_.end ();
          i != i_end; ++i)
       *yycdebug_ << ' ' << i->state;
-    *yycdebug_ << '\n';
+    *yycdebug_ << std::endl;
   }
 
   // Report on the debug stream that the rule \a yyrule is going to be reduced.
   void
   Parser::yy_reduce_print_ (int yyrule)
   {
-    unsigned yylno = yyrline_[yyrule];
+    unsigned int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
     // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-               << " (line " << yylno << "):\n";
+               << " (line " << yylno << "):" << std::endl;
     // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
@@ -1441,6 +1449,7 @@ namespace bison {
 #endif // YYDEBUG
 
   // Symbol number corresponding to token number t.
+  inline
   Parser::token_number_type
   Parser::yytranslate_ (int t)
   {
@@ -1479,21 +1488,21 @@ namespace bison {
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40
     };
-    const unsigned user_token_number_max_ = 295;
+    const unsigned int user_token_number_max_ = 295;
     const token_number_type undef_token_ = 2;
 
-    if (static_cast<int> (t) <= yyeof_)
+    if (static_cast<int>(t) <= yyeof_)
       return yyeof_;
-    else if (static_cast<unsigned> (t) <= user_token_number_max_)
+    else if (static_cast<unsigned int> (t) <= user_token_number_max_)
       return translate_table[t];
     else
       return undef_token_;
   }
 
-#line 7 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:1181
+#line 7 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:1167
 } // bison
-#line 1496 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:1181
-#line 227 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:1182
+#line 1505 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.cpp" // lalr1.cc:1167
+#line 227 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:1168
 
 
 #include "lexer.h"

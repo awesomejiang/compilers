@@ -56,11 +56,12 @@ CompileArgs setupArgs(int argc, char **argv){
 
 void printUsage(){
 	std::cout << "E-K Compiler by Jiawei Jiang and Jingchun Wang." << std::endl;
-	std::cout << "Usage: ./bin/ekcc[.py] [-h|-?] [-v] [-O] [-emit-ast|-emit-llvm] -o <output-file> <input-file>" << std::endl;
+	std::cout << "Usage: ./bin/ekcc[.py] [-h|-?] [-v] [-O] [-jit] [-emit-ast|-emit-llvm] [-o <output-file>] <input-file>" << std::endl;
 	std::cout << "OPtions:" << std::endl;
 	std::cout << "	[-h|-?]                 call usage" << std::endl;
 	std::cout << "	[-v]                    print extra messages" << std::endl;
 	std::cout << "	[-O]                    enable optimizations" << std::endl;
+	std::cout << "	[-jit]                  enable jit" << std::endl;
 	std::cout << "	[-emit-ast|-emit-llvm]  print AST/LLVM IR in output file" << std::endl;
-	std::cout << "	-o <output> <input>     path of output and input file" << std::endl;
+	std::cout << "	[-o <output>] <input>     path of output and input file" << std::endl;
 }

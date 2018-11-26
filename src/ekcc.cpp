@@ -44,7 +44,20 @@ int main(int argc, char **argv){
 			context.setOpt(args.optimization);
 			context.setJit(args.jit);
 			context.generateCode(*rootProg);
-			context.printGenCode();
+
+			if(args.output == "") //print to stdout
+				context.printGenCode();
+			else{	//write to file
+				if (rootProg) {
+					std::string os;
+					llvm::raw_string_ostream ros(os);
+					context.printGenCode(ros);
+					auto tail = os.find("  ret void\n");
+					os.insert(tail, "  call void @run()\n");
+            		std::ofstream ofs(args.output);
+					ofs << os;
+				}
+			}
 		}
 
 	} catch(std::runtime_error& e){

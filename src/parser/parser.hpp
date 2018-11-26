@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.1.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton interface for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2015, 2018 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,16 +31,16 @@
 // version 2.2 of Bison.
 
 /**
- ** \file /Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp
+ ** \file /home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp
  ** Define the bison::parser class.
  */
 
 // C++ LALR(1) parser skeleton written by Akim Demaille.
 
-#ifndef YY_YY_USERS_AWESOMEJIANG_DROPBOX_GRADUATE_COMPILERS_REPO_SRC_PARSER_PARSER_HPP_INCLUDED
-# define YY_YY_USERS_AWESOMEJIANG_DROPBOX_GRADUATE_COMPILERS_REPO_SRC_PARSER_PARSER_HPP_INCLUDED
+#ifndef YY_YY_HOME_JIAWEI_DROPBOX_GRADUATE_COMPILERS_REPO_SRC_PARSER_PARSER_HPP_INCLUDED
+# define YY_YY_HOME_JIAWEI_DROPBOX_GRADUATE_COMPILERS_REPO_SRC_PARSER_PARSER_HPP_INCLUDED
 // //                    "%code requires" blocks.
-#line 13 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:395
+#line 13 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:377
 
 	#include "node.h"
 	#include <string>
@@ -48,7 +48,7 @@
 
 	class Lexer;
 
-#line 52 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:395
+#line 52 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:377
 
 
 # include <cstdlib> // std::abort
@@ -94,7 +94,7 @@
 # define YYUSE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
+#if defined __GNUC__ && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
 # define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
     _Pragma ("GCC diagnostic push") \
@@ -113,21 +113,14 @@
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
-# ifndef YY_NULLPTR
-#  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULLPTR nullptr
-#  else
-#   define YY_NULLPTR 0
-#  endif
-# endif
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 1
 #endif
 
-#line 7 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:395
+#line 7 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:377
 namespace bison {
-#line 131 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:395
+#line 124 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:377
 
 
 
@@ -141,7 +134,7 @@ namespace bison {
     /// Symbol semantic values.
     union semantic_type
     {
-    #line 29 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:395
+    #line 29 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:377
 
 	Prog *progType;
 	Stmt *stmtType;
@@ -161,7 +154,7 @@ namespace bison {
 	Str *strType;
 	string *str;
 
-#line 165 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:395
+#line 158 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:377
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -379,7 +372,7 @@ namespace bison {
     // Tables.
   // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
   // STATE-NUM.
-  static const short yypact_[];
+  static const short int yypact_[];
 
   // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
   // Performed when YYTABLE does not specify something else to do.  Zero
@@ -483,8 +476,6 @@ namespace bison {
       typedef basic_symbol<by_state> super_type;
       /// Construct an empty symbol.
       stack_symbol_type ();
-      /// Copy construct (for efficiency).
-      stack_symbol_type (const stack_symbol_type& that);
       /// Steal the contents from \a sym to build this.
       stack_symbol_type (state_type s, symbol_type& sym);
       /// Assignment, needed by push_back.
@@ -513,7 +504,7 @@ namespace bison {
     void yypush_ (const char* m, state_type s, symbol_type& sym);
 
     /// Pop \a n symbols the three stacks.
-    void yypop_ (unsigned n = 1);
+    void yypop_ (unsigned int n = 1);
 
     /// Constants.
     enum
@@ -534,11 +525,11 @@ namespace bison {
   };
 
 
-#line 7 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:395
+#line 7 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.y" // lalr1.cc:377
 } // bison
-#line 540 "/Users/awesomejiang/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:395
+#line 531 "/home/jiawei/Dropbox/Graduate/COMPILERS/repo/src/parser/parser.hpp" // lalr1.cc:377
 
 
 
 
-#endif // !YY_YY_USERS_AWESOMEJIANG_DROPBOX_GRADUATE_COMPILERS_REPO_SRC_PARSER_PARSER_HPP_INCLUDED
+#endif // !YY_YY_HOME_JIAWEI_DROPBOX_GRADUATE_COMPILERS_REPO_SRC_PARSER_PARSER_HPP_INCLUDED

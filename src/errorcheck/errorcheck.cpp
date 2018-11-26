@@ -86,7 +86,7 @@ void FuncCall::check(){
 			 if((*args).size()+1==types.size()){
 			 	for(auto i=0; i<types.size()-1; ++i){
 			 		//if the type fits. Note: both cint and int fits int
-			 		if(types[i].getName().find((*args)[i]->getTypeName())==string::npos){
+			 		if(types[i].getName().find((*args)[i]->typeName)==string::npos){
 			 			valid = false;
 			 			break;
 			 		}

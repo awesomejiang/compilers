@@ -73,7 +73,6 @@ public:
 
     // Print out all of the generated code.
     void printGenCode() {
-        std::cout << "Printing generated code..." << std::endl;
         module->print(llvm::errs(), nullptr);
     };
     
@@ -99,8 +98,13 @@ public:
     }
     
     void pushBlock(llvm::BasicBlock *block) {
-    	blocks.push(std::make_shared<CodeGenBlock>());
-    	blocks.top()->block = block;
+        auto newBlock = std::make_shared<CodeGenBlock>();
+        if(!blocks.empty()){
+            newBlock->locals = blocks.top()->locals;
+            newBlock->types = blocks.top()->types;
+        }
+        newBlock->block = block;
+    	blocks.push(newBlock);
     }
     
     void popBlock() {
@@ -121,6 +125,8 @@ public:
     }
 private:
     std::stack<std::shared_ptr<CodeGenBlock>> blocks;
+    VarTable locals;
+    TypeTable types;
     llvm::Function *mainFunction = nullptr;
     bool opt = false;
     bool jit = false;

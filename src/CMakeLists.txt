@@ -26,11 +26,11 @@ include_directories(
 )
 
 # generate .a sub libs
+add_subdirectory(codegen)
 add_subdirectory(util)
 add_subdirectory(parser)
 add_subdirectory(ast)
 add_subdirectory(errorcheck)
-add_subdirectory(codegen)
 
 # define executable program
 file(GLOB EKCC_SOURCES ekcc.cpp)
