@@ -33,19 +33,19 @@ CompileArgs setupArgs(int argc, char **argv){
 		else if(arg == "-emit-llvm"){	//produce LLVM IR
 			args.llvm = true;
 		}
-		else if(arg == "-o"){	//output and input file, required
+		else if(arg == "-o"){	//output and file
 			args.output = argv[++i];
 		}
 		else if(arg == "-jit"){
 			args.jit = true;
 		}
-		else{
+		else{	//input file, required
 			args.input = arg;
 		}
 	}
 
-	//
-	if(args.input == "" || args.output == ""){
+	//invalid args: not input or not output(ast mode)
+	if(args.input == "" || (args.ast && args.output == "")){
 		printUsage();
 		exit(0);
 	}
