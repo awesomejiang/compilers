@@ -1,6 +1,7 @@
 #include "context.h"
 
 #include <vector>
+#include <utility>
 
 using namespace std;
 using namespace llvm;
@@ -20,7 +21,7 @@ void CodeGenContext::generateCode(Prog& root) {
     ReturnInst::Create(TheContext, bblock);
     popBlock();
 
-    cout << "Code is generated." << endl;
+    cout << "Code was generated." << endl;
     // module->dump();
 
     if (getOpt()) {
@@ -41,28 +42,30 @@ void CodeGenContext::generateCode(Prog& root) {
     }
 }
 
-
-/* Executes the AST by running the main function */
 GenericValue CodeGenContext::runCode() {
-    cout << (getJit() ? "JIT " : "") << "Running code..." << endl;
+    cout << "Running code..." << endl;
+    if(getJit())
+        cout << "...With JIT!" << endl;
+    
     vector<GenericValue> noargs;
-    Function* TheRunF = cast<Function>(module->getFunction("run"));
-    if (TheRunF == nullptr) {
+    Function* runFunction = cast<Function>(module->getFunction("run"));
+    if (!runFunction) {
         cout << "run() does not exist!" << endl;
     }
-    std::string err;
-    auto eb = make_shared<EngineBuilder>(std::unique_ptr<Module>(module.get()));
+    string err;
+    auto eb = make_shared<EngineBuilder>(move(module));
     if (getJit()) {
         eb->setEngineKind(EngineKind::JIT).setErrorStr(&err);
     }
-    ExecutionEngine *ee = eb->create();
+    auto ee = eb->setErrorStr(&err).create();
 
     if (!ee) {
-        cout << "Error while creating ExecutionEngine in runCode()!" << endl;
+        cout << "error creating ExecutionEngine: " + err << endl;
     }
 
     ee->finalizeObject();
-    GenericValue v = ee->runFunction(TheRunF, noargs);
-    cout << "Code is run." << endl;
+
+    GenericValue v = ee->runFunction(runFunction, noargs);
+    cout << "Code was run." << endl;
     return v;
 }

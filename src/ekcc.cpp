@@ -36,7 +36,7 @@ int main(int argc, char **argv){
 			ofs << out.c_str();
 			ofs << "\n..." << std::endl;
 		}
-		if(args.llvm){
+		else{
 			llvm::InitializeNativeTarget();
 			llvm::InitializeNativeTargetAsmPrinter();
 			llvm::InitializeNativeTargetAsmParser();
@@ -45,19 +45,22 @@ int main(int argc, char **argv){
 			context.setJit(args.jit);
 			context.generateCode(*rootProg);
 
-			if(args.output == "") //print to stdout
-				context.printGenCode();
-			else{	//write to file
-				if (rootProg) {
-					std::string os;
-					llvm::raw_string_ostream ros(os);
-					context.printGenCode(ros);
-					auto tail = os.find("  ret void\n");
-					os.insert(tail, "  call i32 @run()\n");
-            		std::ofstream ofs(args.output);
-					ofs << os;
+			if(args.llvm){	//print ir
+				if(args.output == "") //print to stdout
+					context.printGenCode();
+				else{	//write to file
+					if (rootProg) {
+						std::string os;
+						llvm::raw_string_ostream ros(os);
+						context.printGenCode(ros);
+						auto tail = os.find("  ret void\n");
+						os.insert(tail, "  call i32 @run()\n");
+	            		std::ofstream ofs(args.output);
+						ofs << os;
+					}
 				}
 			}
+			context.runCode();
 		}
 
 	} catch(std::runtime_error& e){
