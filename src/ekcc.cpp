@@ -42,7 +42,8 @@ int main(int argc, char **argv){
 			llvm::InitializeNativeTargetAsmParser();
 			CodeGenContext context;
 			context.setOpt(args.optimization);
-			context.setJit(args.jit);
+			if(args.jit)
+				context.setArgs(args.args);
 			context.generateCode(*rootProg);
 
 			if(args.llvm){	//print ir
@@ -60,7 +61,8 @@ int main(int argc, char **argv){
 					}
 				}
 			}
-			context.runCode();
+			if(args.jit)
+				context.runCode();
 		}
 
 	} catch(std::runtime_error& e){

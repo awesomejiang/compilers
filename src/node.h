@@ -259,7 +259,7 @@ private:
 		return m[op];
 	}
 	void setTypeName(){
-		if(op == "eq" || op == "lt" || op == "gt")
+		if(op == "eq" || op == "lt" || op == "gt" || op == "and" || op == "or")
 			typeName = "int";
 		else if(lhs->typeName == rhs->typeName){
 			typeName = lhs->typeName;

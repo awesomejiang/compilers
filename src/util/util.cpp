@@ -39,8 +39,11 @@ CompileArgs setupArgs(int argc, char **argv){
 		else if(arg == "-jit"){
 			args.jit = true;
 		}
-		else{	//input file, required
+		else if(args.input==""){	//input file, required
 			args.input = arg;
+		}
+		else{
+			args.args.push_back(arg);
 		}
 	}
 

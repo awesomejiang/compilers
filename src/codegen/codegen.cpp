@@ -4,15 +4,15 @@
 using namespace std;
 using namespace llvm;
 
-
+/* *** Util functions ***/ 
 static Type *typeOf(CodeGenContext &context, NType *type) {
-    if(type->getName()=="int" || type->getName()=="cint"){
+    if(type->getName().find("int") != string::npos){
     	if(type->getRef())
     		return Type::getInt32PtrTy(context.TheContext);
     	else
     		return Type::getInt32Ty(context.TheContext);
     }
-    else if(type->getName()=="float" || type->getName()=="sfloat"){
+    else if(type->getName().find("float") != string::npos){
     	if(type->getRef())
     		return Type::getFloatPtrTy(context.TheContext);
     	else
@@ -27,11 +27,26 @@ static Value* LogError(string const &Str)
 	return nullptr;
 }
 
-static void createPrintfFunction(CodeGenContext& context) {
-    vector<Type*> printfArgTypes;
-    printfArgTypes.push_back(Type::getInt8PtrTy(context.TheContext)); //char*
+static Value *removeRef(CodeGenContext &context, Exp *exp, Value *value){
+	if(!dynamic_cast<Var*>(exp))
+		return value;
 
-    FunctionType* retType = FunctionType::get(Type::getInt32Ty(context.TheContext), printfArgTypes, true);
+	auto name = dynamic_cast<Var*>(exp)->name;
+	auto &types = context.getTypes();
+	if(types.find(name)!=types.end() && types[name]->getRef())
+		value = context.Builder.CreateLoad(value);
+
+	return value;
+}
+
+static void createPrintf(CodeGenContext& context) {
+    vector<Type*> printfArgTypes{Type::getInt8PtrTy(context.TheContext)}; //char*
+
+    FunctionType* retType = FunctionType::get(
+    	Type::getInt32Ty(context.TheContext),
+    	makeArrayRef(printfArgTypes),
+    	true
+    );
 
     Function *func = Function::Create(
                 retType, Function::ExternalLinkage,
@@ -41,7 +56,17 @@ static void createPrintfFunction(CodeGenContext& context) {
     func->setCallingConv(CallingConv::C);
 }
 
+static Value *callGetarg(CodeGenContext& context, ExpList *args) {
+	Value * num = args->front()->codegen(context);
+	int index = dyn_cast<ConstantInt>(num)->getSExtValue();
+	auto inputArgs = context.getArgs();
+	if(inputArgs.size() <= index)
+		return LogError("error: wrong number of args is passed.");
+	auto newNum = make_shared<Num>(inputArgs[index]);
+	return newNum->codegen(context);
+}
 
+/* *** Start implementing codegen functions here *** */
 Value* Num :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating Num..." << endl;
@@ -56,7 +81,7 @@ Value* Num :: codegen(CodeGenContext &context)
 Value* Ident :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating Ident..." << endl;
-	auto locals = context.getLocals();
+	auto &locals = context.getLocals();
 	if (locals.find(name) == locals.end())
 		return LogError("Ident: undeclared identifier: " + name);
 	return context.Builder.CreateLoad(locals[name], name.c_str());
@@ -65,12 +90,13 @@ Value* Ident :: codegen(CodeGenContext &context)
 Value* Var :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating Var..." << endl;
-	auto locals = context.getLocals();
+	auto &locals = context.getLocals();
+	auto &types = context.getTypes();
 	if (locals.find(name) == locals.end())
 		return LogError("Var: undeclared identifier: " + name);
-	typeName = context.getTypes()[name]->getName();	//we do not init typeName in constrcutor
-	if(typeName == "")
-		throw runtime_error("error: var do not found in symbol table.");
+	//we do not init typeName in constrcutor, assign to it here!
+	typeName = types[name]->getName();
+
 	return context.Builder.CreateLoad(locals[name], name.c_str());
 }
 
@@ -84,8 +110,11 @@ Value* ExpStmt :: codegen(CodeGenContext &context)
 Value* ReturnStmt :: codegen(CodeGenContext& context)
 {
 	//cout << "Generating ReturnStmt..." << endl;
-    if (!exp) return LogError("ReturnStmt: empty exp");
-    Value* returnValue = exp->codegen(context);
+	Value* returnValue = nullptr;
+    if (exp){
+    	returnValue = exp->codegen(context);
+    	returnValue = removeRef(context, exp, returnValue);
+    }
     context.setCurrentReturnValue(returnValue);
     return returnValue;
 }
@@ -93,6 +122,18 @@ Value* ReturnStmt :: codegen(CodeGenContext& context)
 Value* FuncCall :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating FuncCall..." << endl;
+	//if funccall is for getarg/getargf do it as a macro
+	if(globid->name == "getarg" || globid->name == "getargf"){
+		auto value = callGetarg(context, args);
+		//type converting
+		if(value->getType()->isIntegerTy() && globid->name == "getargf")
+			value = context.Builder.CreateSIToFP(value, Type::getFloatTy(context.TheContext));
+		else if(value->getType()->isFloatTy() && globid->name == "getarg")
+			value = context.Builder.CreateFPToSI(value, Type::getInt32Ty(context.TheContext));
+		return value;
+	}
+
+	//start dealing normal function calls
 	Function* function = context.module->getFunction(globid->name.c_str());
 	if (!function)
 		return LogError("FuncCall: empty function");
@@ -101,19 +142,26 @@ Value* FuncCall :: codegen(CodeGenContext &context)
 
 	vector<Value*> params;
 	Function::arg_iterator ait = function->arg_begin();
-	if(args)
+
+	if(args){
+		auto &locals = context.getLocals();
+		auto &types = context.getTypes();
 		for(auto arg: *args){
-			auto param = arg->codegen(context);
 			// we have to change var to ref if neccessary
 			Type *t = (*(ait++)).getType();
-			if(t->isPointerTy() && !param->getType()->isPointerTy()){
-				AllocaInst* alloc = context.Builder.CreateAlloca(param->getType(), nullptr);
-				context.Builder.CreateStore(param, alloc);
-				params.push_back(alloc);
+			auto varPtr = dynamic_cast<Var*>(arg);
+			if(t->isPointerTy() && varPtr && !types[varPtr->name]->getRef()){
+				params.push_back(locals[varPtr->name]);
 			}
-			else
-				params.push_back(param);
+			else if(!t->isPointerTy() && varPtr && types[varPtr->name]->getRef()){
+				auto param = arg->codegen(context);
+				params.push_back(removeRef(context, arg, param));
+			}
+			else{
+				params.push_back(arg->codegen(context));
+			}
 		}
+	}
 	return context.Builder.CreateCall(function, makeArrayRef(params));
 }
 
@@ -144,73 +192,73 @@ Value* FuncDecl :: codegen(CodeGenContext &context)
 	context.pushBlock(bblock);
 	context.Builder.SetInsertPoint(bblock);
 
-	auto locals = context.getLocals();
-	auto localTypes = context.getTypes();
-
+	auto &locals = context.getLocals();
 	Function::arg_iterator ait = function->arg_begin();
 	Value* argValue;
-	if (args)
+    if (args) {
+    	int index = 1;
 		for (it = args->begin(); it != args->end(); it++) {
 			auto varName = (*it)->getVar()->name;
 			(*it)->codegen(context);
 			argValue = &*ait++;
 			argValue->setName(varName.c_str());
-			// alloc an Value for var and assign to it
-			locals[varName] = context.Builder.CreateAlloca(argValue->getType(), nullptr, varName.c_str());
 			context.Builder.CreateStore(argValue, locals[varName]);
-			//also add types along with locals
-			localTypes[varName] = (*it)->getType();
+			//set noalias
+			if((*it)->getType()->getNoalias())
+				function->addAttribute(index, Attribute::NoAlias);
+			++index;
 		}
+    }
 
 	blk->codegen(context);
 	context.Builder.CreateRet(context.getCurrentReturnValue());
-
+	context.setCurrentReturnValue(nullptr);
 	context.popBlock();
 	return function;
 }
 
-Value* AssignStatementUtil(CodeGenContext &context, Exp* hs, Exp* rhs)
+Value* AssignStatementUtil(CodeGenContext &context, Var* lhs, Exp* rhs)
 {
 	//cout << "Generating AssignStatementUtil..." << endl;
-	auto locals = context.getLocals();
-	auto types = context.getTypes();
+	auto &locals = context.getLocals();
+	auto &types = context.getTypes();
 
-	Var* lhs = dynamic_cast<Var*>(hs);
-	if (locals.find(lhs->name) == locals.end())
-		return nullptr;
+	lhs->typeName = types[lhs->name]->getName();	//only to set the lhs type
+	Value* crhs = rhs->codegen(context);
 
-	Value* assign_gen = rhs->codegen(context);
-
-	// reference type if rhs is a Var and has ref type
-	auto rhs_ptr = dynamic_cast<Var*>(rhs);
-	if(rhs_ptr && types[rhs_ptr->name]->getRef())
-		assign_gen = context.Builder.CreateLoad(assign_gen);
-
-	Value* assign_rhs;
-	if (lhs->typeName.find("float") != string::npos) {
-		if (rhs->typeName.find("float") != string::npos)
-			assign_rhs = assign_gen;
+	//if lhs is ref:
+	Value *clhs;
+	if(types[lhs->name]->getRef()){
+		auto vrhs = dynamic_cast<Var*>(rhs);
+		if(vrhs){ // if rhs is var
+			if(types[vrhs->name]->getRef()){ // && if rhs is ref 
+				auto tmp_load = context.Builder.CreateLoad(locals[vrhs->name]);
+				return context.Builder.CreateStore(tmp_load, locals[lhs->name]);
+			}
+			else{	// && if rhs is not ref
+				return context.Builder.CreateStore(locals[vrhs->name], locals[lhs->name]);
+			}
+		}
 		else
-			assign_rhs = context.Builder.CreateSIToFP(assign_gen, Type::getFloatTy(context.TheContext));
-	} else if (lhs->typeName.find("int") != string::npos) {
-		if (rhs->typeName.find("int") != string::npos)
-			assign_rhs = assign_gen;
-		else
-			assign_rhs = context.Builder.CreateFPToSI(assign_gen, Type::getInt32Ty(context.TheContext));
-	} else {
-		assign_rhs = assign_gen;
+			clhs = context.Builder.CreateLoad(locals[lhs->name]);
+	}
+	else
+		clhs = locals[lhs->name];
+
+	// else, 
+	// remove reference if rhs is a Var and has ref type
+	crhs = removeRef(context, rhs, crhs);
+
+	// and do type convertion
+	if (lhs->typeName.find("float") != string::npos
+	   && rhs->typeName.find("float") == string::npos){
+			crhs = context.Builder.CreateSIToFP(crhs, Type::getFloatTy(context.TheContext));
+	} else if (lhs->typeName.find("int") != string::npos
+		&&rhs->typeName.find("int") == string::npos){
+			crhs = context.Builder.CreateFPToSI(crhs, Type::getInt32Ty(context.TheContext));
 	}
 
-	Value* crhs = assign_rhs;
-	auto type = context.getTypes()[lhs->name];
-	if (type->getRef()) {
-		crhs = context.Builder.CreateLoad(locals[lhs->name]);
-		return context.Builder.CreateStore(assign_rhs, crhs);
-	} else {
-		return context.Builder.CreateStore(crhs, locals[lhs->name]);
-	}
-
-	return nullptr;
+	return context.Builder.CreateStore(crhs, clhs);
 }
 
 Value* AssignStmt :: codegen(CodeGenContext &context)
@@ -242,6 +290,7 @@ Value* VarDecl :: codegen(CodeGenContext &context)
 	AllocaInst* alloc = context.Builder.CreateAlloca(typeOf(context, type), nullptr, var->name.c_str());
 	context.getLocals()[var->name] = alloc;
 	context.getTypes()[var->name] = type;
+	var->typeName = type->getName();
 	return alloc;
 }
 
@@ -250,12 +299,16 @@ Value* PrintStmt :: codegen(CodeGenContext &context)
 	//cout << "Generating PrintStmt..." << endl;
 	Function* function = context.module->getFunction("printf");
 	Value* vstr;
+	Value* vnum = exp->codegen(context);
+	vnum = removeRef(context, exp, vnum);
 	if (exp->typeName.find("int") != string::npos)
-		vstr = context.Builder.CreateGlobalStringPtr("%d");
-	else
-		vstr = context.Builder.CreateGlobalStringPtr("%f");
-	vector<Value*> int32_params{vstr, exp->codegen(context)};
-	CallInst* call = context.Builder.CreateCall(function, int32_params);
+		vstr = context.Builder.CreateGlobalStringPtr("%d\n");
+	else{
+		vnum = context.Builder.CreateFPExt(vnum, Type::getDoubleTy(context.TheContext));
+		vstr = context.Builder.CreateGlobalStringPtr("%f\n");
+	}
+	vector<Value*> int32_params{vstr, vnum};
+	CallInst* call = context.Builder.CreateCall(function, int32_params, "print");
 	return call;
 }
 
@@ -263,10 +316,10 @@ Value* PrintSlitStmt :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating PrintSlitStmt..." << endl;
 	Function* function = context.module->getFunction("printf");
-	string temp = str->name;
+	string temp = str->name + "\n";
 	Value *vstr = context.Builder.CreateGlobalStringPtr(temp);
 	vector<Value*> int32_params{vstr};
-	CallInst* call = context.Builder.CreateCall(function, int32_params);
+	CallInst* call = context.Builder.CreateCall(function, int32_params, "printslit");
 	return call;
 }
 
@@ -289,8 +342,14 @@ Value* IfStmt :: codegen(CodeGenContext &context)
 
 	Value* thenV = stmt->codegen(context);
 
-	context.Builder.CreateBr(bbMerg);
-	bbThen = context.Builder.GetInsertBlock();
+	if(context.getCurrentReturnValue()){
+		context.Builder.CreateRet(context.getCurrentReturnValue());
+		context.setCurrentReturnValue(nullptr);
+	}
+	else{
+		context.Builder.CreateBr(bbMerg);
+		bbThen = context.Builder.GetInsertBlock();
+	}
 
 	function->getBasicBlockList().push_back(bbElse);
 	context.Builder.SetInsertPoint(bbElse);
@@ -298,8 +357,14 @@ Value* IfStmt :: codegen(CodeGenContext &context)
 	if (elsestmt)
 		elsestmt->codegen(context);
 
-	context.Builder.CreateBr(bbMerg);
-	bbElse = context.Builder.GetInsertBlock();
+	if(context.getCurrentReturnValue()){
+		context.Builder.CreateRet(context.getCurrentReturnValue());
+		context.setCurrentReturnValue(nullptr);
+	}
+	else{
+		context.Builder.CreateBr(bbMerg);
+		bbElse = context.Builder.GetInsertBlock();
+	}
 
 	function->getBasicBlockList().push_back(bbMerg);
 	context.Builder.SetInsertPoint(bbMerg);
@@ -310,68 +375,56 @@ Value* IfStmt :: codegen(CodeGenContext &context)
 Value* BinOp :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating BinOp..." << endl;
+	if(op == "assign"){
+		auto ret = AssignStatementUtil(context, dynamic_cast<Var*>(lhs), rhs);
+		setTypeName();
+		return ret;
+	}
+
 	Instruction::BinaryOps instBin;
 	Instruction::OtherOps instOther;
 	CmpInst::Predicate pred;
 
-	Value* clhs = lhs->codegen(context);
-	Value* crhs = rhs->codegen(context);
+	Value* llhs = lhs->codegen(context);
+	Value* lrhs = rhs->codegen(context);
+	if (!llhs || !lrhs) return LogError("error: invalid binOp, one or more slide is empty.");
+
 	setTypeName();
-	if (!clhs || !crhs) return nullptr;
+
+	// reference type
+	llhs = removeRef(context, lhs, llhs);
+	lrhs = removeRef(context, rhs, lrhs);
+
+	// type conversion
+	if (typeName.find("float") != string::npos) {	//return type is float/sfloat
+		if (lhs->typeName.find("float") == string::npos)
+			llhs = context.Builder.CreateSIToFP(llhs, Type::getFloatTy(context.TheContext));
+		if (rhs->typeName.find("float") == string::npos)
+			lrhs = context.Builder.CreateSIToFP(lrhs, Type::getFloatTy(context.TheContext));
+	} else if (typeName.find("int") != string::npos) {	//return int/cint
+		if (lhs->typeName.find("int") == string::npos)
+			llhs = context.Builder.CreateFPToSI(llhs, Type::getInt32Ty(context.TheContext));
+		if (rhs->typeName.find("int") == string::npos)
+			lrhs = context.Builder.CreateFPToSI(lrhs, Type::getInt32Ty(context.TheContext));
+	}
 
 	if (op == "and") {
 		instBin = Instruction::And;
-		return context.Builder.CreateAnd(clhs, crhs);
+		return context.Builder.CreateAnd(llhs, lrhs);
 	} else if (op == "or") {
 		instBin = Instruction::Or;
-		return context.Builder.CreateOr(clhs, crhs);
-	} else if (op == "assign") {
-		return AssignStatementUtil(context, lhs, rhs);
-	}
-
-	// reference type
-	auto types = context.getTypes();
-	auto lhs_ptr = dynamic_cast<Var*>(lhs);
-	if(lhs_ptr && types[lhs_ptr->name]->getRef())
-		clhs = context.Builder.CreateLoad(clhs);
-	auto rhs_ptr = dynamic_cast<Var*>(rhs);
-	if(rhs_ptr && types[rhs_ptr->name]->getRef())
-		crhs = context.Builder.CreateLoad(crhs);
-
-	// tpye conversion
-	Value* llhs, * rrhs;
-	if (typeName == "float") {
-		if (lhs->typeName == "float")
-			llhs = clhs;
-		else
-			llhs = context.Builder.CreateSIToFP(clhs, Type::getFloatTy(context.TheContext));
-		if (rhs->typeName == "float")
-			rrhs = crhs;
-		else
-			rrhs = context.Builder.CreateSIToFP(crhs, Type::getFloatTy(context.TheContext));
-	} else if (typeName == "int") {
-		if (lhs->typeName == "int")
-			llhs = clhs;
-		else
-			llhs = context.Builder.CreateFPToSI(clhs, Type::getInt32Ty(context.TheContext));
-		if (rhs->typeName == "int")
-			rrhs = crhs;
-		else
-			rrhs = context.Builder.CreateFPToSI(crhs, Type::getInt32Ty(context.TheContext));
-	} else {
-		llhs = clhs;
-		rrhs = crhs;
+		return context.Builder.CreateOr(llhs, lrhs);
 	}
 
 	Value* value = nullptr;
-	if (typeName == "float" || typeName == "sfloat") {
-		if (op == "add") value = context.Builder.CreateFAdd(llhs, rrhs);
-		else if (op == "sub") value = context.Builder.CreateFSub(llhs, rrhs);
-		else if (op == "mul") value = context.Builder.CreateFMul(llhs, rrhs);
-		else if (op == "div") value = context.Builder.CreateFDiv(llhs, rrhs);
-		else if (op == "eq") value= context.Builder.CreateFCmpOEQ(llhs, rrhs);
-		else if (op == "lt") value = context.Builder.CreateFCmpOLT(llhs, rrhs);
-		else if (op == "gt") value = context.Builder.CreateFCmpOGT(llhs, rrhs);
+	if (typeName.find("float") != string::npos) {
+		if (op == "add") value = context.Builder.CreateFAdd(llhs, lrhs);
+		else if (op == "sub") value = context.Builder.CreateFSub(llhs, lrhs);
+		else if (op == "mul") value = context.Builder.CreateFMul(llhs, lrhs);
+		else if (op == "div") value = context.Builder.CreateFDiv(llhs, lrhs);
+		else if (op == "eq") value= context.Builder.CreateFCmpOEQ(llhs, lrhs);
+		else if (op == "lt") value = context.Builder.CreateFCmpOLT(llhs, lrhs);
+		else if (op == "gt") value = context.Builder.CreateFCmpOGT(llhs, lrhs);
 		else throw runtime_error("unrecognized op: " + op);
 		if (typeName == "float") {
 			FastMathFlags fmf;
@@ -379,19 +432,19 @@ Value* BinOp :: codegen(CodeGenContext &context)
 			((BinaryOperator*) value)->setFastMathFlags(fmf);
 		}
 	} else if (typeName == "int" || typeName == "cint") {
-		if (op == "eq") value = context.Builder.CreateICmpEQ(llhs, rrhs);
-		else if (op == "lt") value = context.Builder.CreateICmpSLT(llhs, rrhs);
-		else if (op == "gt") value = context.Builder.CreateICmpSGT(llhs, rrhs);
+		if (op == "eq") value = context.Builder.CreateICmpEQ(llhs, lrhs);
+		else if (op == "lt") value = context.Builder.CreateICmpSLT(llhs, lrhs);
+		else if (op == "gt") value = context.Builder.CreateICmpSGT(llhs, lrhs);
 		else {
 			if (typeName == "int") {
-				if (op == "add") value = context.Builder.CreateAdd(llhs, rrhs);
-				else if (op == "sub") value = context.Builder.CreateSub(llhs, rrhs);
-				else if (op == "mul") value = context.Builder.CreateMul(llhs, rrhs);
-				else if (op == "div") value = context.Builder.CreateSDiv(llhs, rrhs);
+				if (op == "add") value = context.Builder.CreateAdd(llhs, lrhs);
+				else if (op == "sub") value = context.Builder.CreateSub(llhs, lrhs);
+				else if (op == "mul") value = context.Builder.CreateMul(llhs, lrhs);
+				else if (op == "div") value = context.Builder.CreateSDiv(llhs, lrhs);
 				else throw runtime_error("unrecognized op: " + op);
 			} else { // cint
 				if (op == "div")
-					value = context.Builder.CreateSDiv(llhs, rrhs);
+					value = context.Builder.CreateSDiv(llhs, lrhs);
 				else {
 					Value* errV;
 					string errInfo;
@@ -409,7 +462,7 @@ Value* BinOp :: codegen(CodeGenContext &context)
 						errInfo = ",Mul operation overflows!,";
 					}
 					else throw runtime_error("unrecognized op: " + op);
-					auto *SBinaryOperatorWithOverflow = context.Builder.CreateCall(errV, {llhs, rrhs});
+					auto *SBinaryOperatorWithOverflow = context.Builder.CreateCall(errV, {llhs, lrhs});
 					auto *SBinaryOperator = context.Builder.CreateExtractValue(SBinaryOperatorWithOverflow, 0, "binaryop");
 					auto *Overflow = context.Builder.CreateExtractValue(SBinaryOperatorWithOverflow, 1, "obit");
 
@@ -447,9 +500,9 @@ Value* UaryOp :: codegen(CodeGenContext &context)
 	//cout << "Generating UaryOp..." << endl;
 	shared_ptr<Num> zero = make_shared<Num>("0");
 	shared_ptr<BinOp> bin = make_shared<BinOp>(zero.get(), op, exp);
-	if (op.find("-") != string::npos)
+	if (op == "-")
 		return bin->codegen(context);
-	else if (op.find("!") != string::npos)
+	else if (op == "!")
 		return context.Builder.CreateNot(exp->codegen(context));
 	return LogError("Invalid UaryOp.");
 }
@@ -487,7 +540,7 @@ Value* Prog :: codegen(CodeGenContext &context)
 {
 	//cout << "Generating Prog..." << endl;
 
-	createPrintfFunction(context);
+	createPrintf(context);
 
 	if (externs)
 		for(auto ext: *externs)

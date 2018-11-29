@@ -30,6 +30,8 @@
 #include <stack>
 #include <typeinfo>
 #include <unordered_map>
+#include <vector>
+#include <string>
 
 
 using VarTable = std::unordered_map<std::string, llvm::Value*>;
@@ -61,14 +63,6 @@ public:
         return opt;
     }
 
-    void setJit(bool to_jit) {
-        jit = to_jit;
-    }
-
-    bool getJit() {
-        return jit;
-    }
-
     void generateCode(Prog &root);
 
     // Print out all of the generated code.
@@ -88,6 +82,14 @@ public:
     
     TypeTable& getTypes() {
         return blocks.top()->types ;
+    }
+
+    void setArgs(std::vector<std::string> const & _args){
+        args = _args;
+    }
+
+    std::vector<std::string> getArgs(){
+        return args;
     }
     
     llvm::BasicBlock *getCurrentBlock() {
@@ -125,11 +127,9 @@ public:
     }
 private:
     std::stack<std::shared_ptr<CodeGenBlock>> blocks;
-    VarTable locals;
-    TypeTable types;
+    std::vector<std::string> args;
     llvm::Function *mainFunction = nullptr;
     bool opt = false;
-    bool jit = false;
 };
 
 

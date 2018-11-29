@@ -10,11 +10,10 @@ void ExpStmt::check(){
 
 void AssignStmt::check(){
 	//vardecl is for ref variable and rhs is not a variable
-	if(vdecl->getType()->getRef() && exp->typeName != "")
+	auto rhs = dynamic_cast<Var*>(exp);
+	if(vdecl->getType()->getRef() && !dynamic_cast<Var*>(exp))
 		throw std::runtime_error("error: ref variable can only be initialized by a variable.");
 	//update varTable
-	if(varTable.empty())
-		varTable.emplace();
 	varTable.top().insert(vdecl->getVar()->name);
 
 	exp->check();
@@ -47,12 +46,8 @@ void PrintSlitStmt::check(){}
 void NType::check(){}
 
 void BinOp::check(){
-	if(op == "assign")
-		rhs->check();
-	else{
-		lhs->check();
-		rhs->check();
-	}
+	lhs->check();
+	rhs->check();
 }
 
 void UaryOp::check(){

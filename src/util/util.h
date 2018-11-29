@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <iostream>
+#include <vector>
 
 class CompileException: public std::runtime_error{
 public:
@@ -25,6 +26,7 @@ struct CompileArgs{
 	bool ast = false;
 	bool llvm = false;
 	std::string input, output;
+	std::vector<std::string> args;
 };
 
 CompileArgs setupArgs(int argc, char **argv);
