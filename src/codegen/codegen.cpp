@@ -390,7 +390,6 @@ Value* BinOp :: codegen(CodeGenContext &context)
 	if (!llhs || !lrhs) return LogError("error: invalid binOp, one or more slide is empty.");
 
 	setTypeName();
-
 	// reference type
 	llhs = removeRef(context, lhs, llhs);
 	lrhs = removeRef(context, rhs, lrhs);
@@ -451,34 +450,34 @@ Value* BinOp :: codegen(CodeGenContext &context)
 					if (op == "add") {
 						errV = Intrinsic::getDeclaration(
 							context.module.get(), Intrinsic::sadd_with_overflow, Type::getInt32Ty(context.TheContext));
-						errInfo = ",Add operation overflows!,";
+						errInfo = "'cint check: Add operation overflows!'";
 					} else if (op == "sub") {
 						errV = Intrinsic::getDeclaration(
 							context.module.get(), Intrinsic::ssub_with_overflow, Type::getInt32Ty(context.TheContext));
-						errInfo = ",Sub operation overflows!,";
+						errInfo = "'cint check: Sub operation overflows!'";
 					} else if (op == "mul") {
 						errV = Intrinsic::getDeclaration(
 							context.module.get(), Intrinsic::smul_with_overflow, Type::getInt32Ty(context.TheContext));
-						errInfo = ",Mul operation overflows!,";
+						errInfo = "'cint check: Mul operation overflows!'";
 					}
 					else throw runtime_error("unrecognized op: " + op);
-					auto *SBinaryOperatorWithOverflow = context.Builder.CreateCall(errV, {llhs, lrhs});
+					auto *SBinaryOperatorWithOverflow = context.Builder.CreateCall(errV, {llhs, lrhs}, "res");
 					auto *SBinaryOperator = context.Builder.CreateExtractValue(SBinaryOperatorWithOverflow, 0, "binaryop");
 					auto *Overflow = context.Builder.CreateExtractValue(SBinaryOperatorWithOverflow, 1, "obit");
 
 					Function* function = context.getCurrentBlock()->getParent();
-					BasicBlock* bbNormal = BasicBlock::Create(context.TheContext, "normal", function);
 					BasicBlock* bbOverflow = BasicBlock::Create(context.TheContext, "overflow", function);
+					BasicBlock* bbNormal = BasicBlock::Create(context.TheContext, "normal");
 					BasicBlock* bbMerg = BasicBlock::Create(context.TheContext, "continue");
 
-					context.Builder.CreateCondBr(Overflow, bbNormal, bbOverflow);
-					context.Builder.SetInsertPoint(bbNormal);
-					context.Builder.CreateBr(bbMerg);
-
-					function->getBasicBlockList().push_back(bbOverflow);
+					context.Builder.CreateCondBr(Overflow, bbOverflow, bbNormal);
 					context.Builder.SetInsertPoint(bbOverflow);
 					auto printError = make_shared<PrintSlitStmt>(errInfo);
 					printError->codegen(context);
+					context.Builder.CreateBr(bbMerg);
+
+					function->getBasicBlockList().push_back(bbNormal);
+					context.Builder.SetInsertPoint(bbNormal);
 					context.Builder.CreateBr(bbMerg);
 
 					function->getBasicBlockList().push_back(bbMerg);
