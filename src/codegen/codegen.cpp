@@ -250,12 +250,10 @@ Value* AssignStatementUtil(CodeGenContext &context, Var* lhs, Exp* rhs)
 	crhs = removeRef(context, rhs, crhs);
 
 	// and do type convertion
-	if (lhs->typeName.find("float") != string::npos
-	   && rhs->typeName.find("float") == string::npos){
-			crhs = context.Builder.CreateSIToFP(crhs, Type::getFloatTy(context.TheContext));
-	} else if (lhs->typeName.find("int") != string::npos
-		&&rhs->typeName.find("int") == string::npos){
-			crhs = context.Builder.CreateFPToSI(crhs, Type::getInt32Ty(context.TheContext));
+	if (lhs->typeName.find("float") != string::npos && rhs->typeName.find("float") == string::npos) {
+		crhs = context.Builder.CreateSIToFP(crhs, Type::getFloatTy(context.TheContext));
+	} else if (lhs->typeName.find("int") != string::npos &&rhs->typeName.find("int") == string::npos) {
+		crhs = context.Builder.CreateFPToSI(crhs, Type::getInt32Ty(context.TheContext));
 	}
 
 	return context.Builder.CreateStore(crhs, clhs);
@@ -442,9 +440,64 @@ Value* BinOp :: codegen(CodeGenContext &context)
 				else if (op == "div") value = context.Builder.CreateSDiv(llhs, lrhs);
 				else throw runtime_error("unrecognized op: " + op);
 			} else { // cint
-				if (op == "div")
-					value = context.Builder.CreateSDiv(llhs, lrhs);
-				else {
+				if (op == "div") {
+
+					auto zero = make_shared<Num>("0");
+					Value* isDividorZero = make_shared<BinOp>(rhs, "==", zero.get())->codegen(context);
+					string errInfoDivBy0 = "'cint check: Div by 0!'";
+
+					Value* errDivBy0 = context.Builder.CreateICmpNE(isDividorZero, 
+						ConstantInt::get(Type::getInt32Ty(context.TheContext), 0, true));
+					Function* function2 = context.getCurrentBlock()->getParent();
+					BasicBlock* bbDvdBy0 = BasicBlock::Create(context.TheContext, "dvdbyzero", function2);
+					BasicBlock* bbNormal2 = BasicBlock::Create(context.TheContext, "normal_2");
+					BasicBlock* bbMerg2 = BasicBlock::Create(context.TheContext, "continue_2");
+
+					context.Builder.CreateCondBr(errDivBy0, bbDvdBy0, bbNormal2);
+					context.Builder.SetInsertPoint(bbDvdBy0);
+					auto printError2 = make_shared<PrintSlitStmt>(errInfoDivBy0);
+					printError2->codegen(context);
+					context.Builder.CreateBr(bbMerg2);
+
+					function2->getBasicBlockList().push_back(bbNormal2);
+					context.Builder.SetInsertPoint(bbNormal2);
+					context.Builder.CreateBr(bbMerg2);
+
+					function2->getBasicBlockList().push_back(bbMerg2);
+					context.Builder.SetInsertPoint(bbMerg2);
+					//auto printError2 = make_shared<PrintSlitStmt>("Divided by 0!");
+					//value = context.Builder.CreateSDiv(llhs, lrhs);
+
+
+
+					Value* errDivOF = Intrinsic::getDeclaration(
+						context.module.get(), Intrinsic::smul_with_overflow, Type::getInt32Ty(context.TheContext));
+					string errInfoDivOF = "'cint check: Div operation overflows!'";
+
+					Value *SBinaryOperatorWithOverflow = context.Builder.CreateCall(errDivOF, {llhs, lrhs}, "res");
+					Value *SBinaryOperator = context.Builder.CreateExtractValue(SBinaryOperatorWithOverflow, 0, "binaryop");
+					Value *Overflow = context.Builder.CreateExtractValue(SBinaryOperatorWithOverflow, 1, "obit");
+
+					Function* function = context.getCurrentBlock()->getParent();
+					BasicBlock* bbOverflow = BasicBlock::Create(context.TheContext, "overflow", function);
+					BasicBlock* bbNormal = BasicBlock::Create(context.TheContext, "normal");
+					BasicBlock* bbMerg = BasicBlock::Create(context.TheContext, "continue");
+
+					context.Builder.CreateCondBr(Overflow, bbOverflow, bbNormal);
+					context.Builder.SetInsertPoint(bbOverflow);
+					auto printError = make_shared<PrintSlitStmt>(errInfoDivOF);
+					printError->codegen(context);
+					context.Builder.CreateBr(bbMerg);
+
+					function->getBasicBlockList().push_back(bbNormal);
+					context.Builder.SetInsertPoint(bbNormal);
+					context.Builder.CreateBr(bbMerg);
+
+					function->getBasicBlockList().push_back(bbMerg);
+					context.Builder.SetInsertPoint(bbMerg);
+
+					return SBinaryOperator;
+				} else {
 					Value* errV;
 					string errInfo;
 					if (op == "add") {

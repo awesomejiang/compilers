@@ -266,14 +266,14 @@ private:
 		}
 		else{
 			auto name1 = lhs->typeName, name2 = rhs->typeName;
+			if(name1 == "cint" || name2 == "cint")
+				typeName = "cint";
 			if(name1 == "float" || name2 == "float")
 				typeName = "float";
 			if(name1 == "sfloat" || name2 == "sfloat")
 				typeName = "sfloat";
 			if(name1 == "int" || name2 == "int")
 				typeName = "int";
-			if(name1 == "cint" || name2 == "cint")
-				typeName = "cint";
 		}
 	}
 };
