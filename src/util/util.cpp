@@ -26,6 +26,8 @@ CompileArgs setupArgs(int argc, char **argv){
 		}
 		else if(arg == "-O"){	//optimizations
 			args.optimization = true;
+			auto bits = argv[++i];
+			args.optType = {bits[0]=='1', bits[1]=='1', bits[2]=='1'};
 		}
 		else if(arg == "-emit-ast"){	//print serialized AST in output file
 			args.ast = true;
@@ -63,7 +65,7 @@ void printUsage(){
 	std::cout << "OPtions:" << std::endl;
 	std::cout << "	[-h|-?]                 call usage" << std::endl;
 	std::cout << "	[-v]                    print extra messages" << std::endl;
-	std::cout << "	[-O]                    enable optimizations" << std::endl;
+	std::cout << "	[-O xxx]                enable optimizations, xxx is for 3 opt choices" << std::endl;
 	std::cout << "	[-jit]                  enable jit" << std::endl;
 	std::cout << "	[-emit-ast|-emit-llvm]  print AST/LLVM IR in output file" << std::endl;
 	std::cout << "	[-o <output>] <input>     path of output and input file" << std::endl;

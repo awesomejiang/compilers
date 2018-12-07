@@ -22,6 +22,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include "llvm/Transforms/Utils/Cloning.h"
 
 #include "node.h"
 #include "parser.hpp"
@@ -32,6 +33,8 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <utility>
+
 
 
 using VarTable = std::unordered_map<std::string, llvm::Value*>;
@@ -55,8 +58,9 @@ public:
     : Builder(TheContext),
       module{std::unique_ptr<llvm::Module>(new llvm::Module{"main", TheContext})} {}
 
-    void setOpt(bool to_opt) {
+    void setOpt(bool to_opt, OptType to_ot) {
         opt = to_opt;
+        optType = to_ot;
     }
 
     bool getOpt() {
@@ -130,6 +134,8 @@ private:
     std::vector<std::string> args;
     llvm::Function *mainFunction = nullptr;
     bool opt = false;
+    OptType optType;
+
 };
 
 

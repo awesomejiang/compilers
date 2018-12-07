@@ -1,6 +1,8 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include "util/util.h"
+
 #include <iostream>
 #include <vector>
 #include <string>

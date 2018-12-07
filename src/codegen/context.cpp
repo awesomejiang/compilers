@@ -1,31 +1,13 @@
 #include "context.h"
 
 #include <vector>
-#include <utility>
-#include <string>
 
 using namespace std;
 using namespace llvm;
 
 void CodeGenContext::generateCode(Prog& root) {
-    if (getOpt()) {
-        cout << "Enabling optimization..." << endl;
-        auto pm = make_shared<legacy::PassManager>();
-        int optLevel = 3;
-        int sizeLevel = 0;
-        PassManagerBuilder builder;
-        builder.OptLevel = optLevel;
-        builder.SizeLevel = sizeLevel;
-        builder.Inliner = createFunctionInliningPass(optLevel, sizeLevel, true);
-        builder.DisableUnitAtATime = false;
-        builder.DisableUnrollLoops = false;
-        builder.LoopVectorize = true;
-        builder.SLPVectorize = true;
-        builder.populateModulePassManager(*pm);
-        pm->run(*module);
-    }
-
     cout << "Generating code..." << endl;
+    Timer t("codeGenerator");
 
     vector<Type*> argTypes;
     FunctionType *ftype = FunctionType::get(Type::getVoidTy(TheContext), makeArrayRef(argTypes), false);
@@ -41,10 +23,38 @@ void CodeGenContext::generateCode(Prog& root) {
     cout << "Code was generated." << endl;
     // module->dump();
 
+    if (getOpt()) {
+        cout << "Enabling optimization..." << endl;
+        PassManagerBuilder builder;
+        auto pm = make_shared<legacy::PassManager>();
+        auto fm = make_shared<legacy::FunctionPassManager>(module.get());
+
+        builder.OptLevel = optType.level3? 3: 0;
+        builder.SizeLevel = 0;
+        if(optType.level3 || optType.inlining)
+            builder.Inliner = createFunctionInliningPass(3, 0, true);
+        builder.DisableUnitAtATime = optType.level3? false: true;
+        builder.DisableUnrollLoops = optType.level3? false: true;
+        builder.LoopVectorize = optType.level3? true: false;
+        builder.SLPVectorize = optType.level3? true: false;
+        builder.MergeFunctions = optType.unrolling;
+        builder.populateFunctionPassManager(*fm);
+        builder.populateModulePassManager(*pm);
+
+        fm->doInitialization();
+        for (Function &f : *module)
+            fm->run(f);
+        fm->doFinalization();
+
+//        unique_ptr<Module> m2(CloneModule(module.get()));
+//        pm->run(*module);
+//        module = move(m2);
+    }
 }
 
 GenericValue CodeGenContext::runCode() {
     cout << "Running code with JIT!" << endl;
+        Timer t("jit");
 
     //no args
     vector<GenericValue> noargs;

@@ -41,7 +41,7 @@ int main(int argc, char **argv){
 			llvm::InitializeNativeTargetAsmPrinter();
 			llvm::InitializeNativeTargetAsmParser();
 			CodeGenContext context;
-			context.setOpt(args.optimization);
+			context.setOpt(args.optimization, args.optType);
 			if(args.jit)
 				context.setArgs(args.args);
 			context.generateCode(*rootProg);
